@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title> 상상: 내가 음악을 만든다면</title>
+  <title>상상: 내가 음악을 만든다면</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
@@ -17,6 +17,9 @@
     input[type="range"].seek-bar::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 999px; background: #38bdf8; border: 3px solid #ffffff; margin-top: -7px; box-shadow: 0 2px 6px rgba(0,0,0,0.45); }
     .timeline-clip { touch-action: none; user-select: none; -webkit-user-select: none; }
     .playhead-handle { clip-path: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%); }
+    input[type="range"].studio-slider { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
+    input[type="range"].studio-slider::-webkit-slider-runnable-track { height: 8px; border-radius: 999px; background: #1e293b; border: 1px solid #334155; }
+    input[type="range"].studio-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 999px; background: #f8fafc; border: 3px solid #6366f1; margin-top: -7px; box-shadow: 0 2px 5px rgba(0,0,0,0.45); }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen pb-10">
@@ -92,54 +95,112 @@
         </section>
 
         <section class="bg-white rounded-3xl p-5 shadow-xs border border-slate-200">
-          <h2 class="text-base sm:text-lg font-extrabold text-slate-900 mb-3.5 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm">2</span>
-            우리 모둠 도구 &amp; 활동 사진
-          </h2>
-          <input id="albumInput" type="file" accept="image/*" class="hidden" />
-          <input id="cameraInput" type="file" accept="image/*" capture="environment" class="hidden" />
-          <div data-html2canvas-ignore="true" class="grid grid-cols-2 gap-2.5 mb-3">
-            <button type="button" onclick="document.getElementById('albumInput').click()" class="py-3 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm border border-slate-200 active:scale-95 transition">🖼️ 앨범에서 사진 선택</button>
-            <button type="button" onclick="document.getElementById('cameraInput').click()" class="py-3 px-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs sm:text-sm border border-emerald-200 active:scale-95 transition">📷 카메라로 바로 찍기</button>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3.5">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <span class="w-7 h-7 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm">2</span>
+              우리 모둠 도구 &amp; 활동 사진
+            </h2>
+            <div class="flex items-center gap-1.5">
+              <input id="albumInput" type="file" accept="image/*" class="hidden" />
+              <input id="cameraInput" type="file" accept="image/*" capture="environment" class="hidden" />
+              <button type="button" onclick="document.getElementById('albumInput').click()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95">🖼️ 앨범</button>
+              <button type="button" onclick="document.getElementById('cameraInput').click()" class="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold active:scale-95">📷 촬영</button>
+            </div>
           </div>
-          <div id="photoEmptyHint" class="py-6 px-4 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-slate-400 text-xs font-semibold">
-            사진을 선택하거나 촬영하면 이곳에 표시됩니다.
+
+          <div id="photoEmptyHint" class="py-10 px-4 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 text-center">
+            <p class="text-2xl mb-1.5">📸</p>
+            <p class="text-xs sm:text-sm font-bold text-slate-500">연주에 사용한 도구 사진이나 모둠 모습을 넣어보세요</p>
           </div>
-          <div id="photoPreviewWrap" class="hidden relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
-            <img id="photoPreview" alt="활동 사진" class="w-full max-h-72 object-contain mx-auto" />
-            <button id="removePhotoBtn" data-html2canvas-ignore="true" type="button" class="absolute top-2.5 right-2.5 px-3 py-1.5 rounded-xl bg-slate-900/80 text-white text-xs font-bold hover:bg-rose-600 transition">사진 삭제</button>
+
+          <div id="photoPreviewWrap" class="hidden relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50">
+            <img id="photoPreview" alt="활동 사진 미리보기" class="w-full max-h-64 object-contain mx-auto block" />
+            <button id="removePhotoBtn" type="button" class="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-xl bg-slate-900/80 text-white text-xs font-bold hover:bg-rose-600">삭제 ✕</button>
           </div>
         </section>
 
         <div class="px-4 py-2.5 rounded-2xl bg-white border border-slate-200 flex items-center justify-between text-xs font-bold text-slate-600">
           <span>🎵 완성된 소리 조각</span>
-          <span id="captureTrackSummary" class="text-indigo-600">0개 조각 · 총 00:00</span>
+          <span id="captureTrackSummary" class="text-indigo-600 font-extrabold">0개 조각 · 총 00:00</span>
         </div>
       </div>
 
-      <button id="captureBtn" type="button" class="w-full py-3.5 px-5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm shadow-md flex items-center justify-center gap-2 active:scale-95 transition">
-        <span>📸</span>
-        <span>활동 정보·사진 한 번에 캡쳐하기</span>
+      <button id="captureBtn" type="button" class="w-full py-3.5 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm shadow-sm active:scale-95 transition">
+        📸 활동 정보·사진 한 번에 캡쳐하기
       </button>
     </div>
 
-    <!-- 오른쪽 컬럼: 녹음 스튜디오 → 미니 건반 → 타임라인 편집 → 조각 목록 -->
+    <!-- 오른쪽 컬럼: 녹음 스튜디오, 미니 건반, 타임라인, 조각 목록 -->
     <div class="lg:col-span-7 flex flex-col gap-5">
+
       <!-- 1. 소리 녹음 스튜디오 -->
-      <section class="bg-slate-900 rounded-3xl p-5 sm:p-6 text-white shadow-lg">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+      <section class="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-md border border-slate-800">
+        <div class="flex items-center justify-between gap-2 mb-3.5">
           <div class="flex items-center gap-2">
             <span id="recBadge" class="w-3 h-3 rounded-full bg-slate-500"></span>
-            <h2 class="text-base sm:text-lg font-extrabold">소리 녹음 스튜디오</h2>
+            <h2 class="text-base sm:text-lg font-extrabold">🎙️ 소리 녹음 스튜디오</h2>
             <span id="studioModeBadge" class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[11px] font-bold">대기 중</span>
           </div>
-          <span id="timerDisplay" class="font-mono text-2xl sm:text-3xl font-extrabold text-rose-400 tracking-wider">00:00</span>
+          <span id="timerDisplay" class="font-mono text-xl sm:text-2xl font-extrabold text-rose-400">00:00</span>
         </div>
 
-        <div id="canvasBox" class="relative w-full h-24 sm:h-28 bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden mb-4">
+        <div id="canvasBox" class="relative w-full h-24 sm:h-28 bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden mb-3.5">
           <canvas id="visualizer" class="w-full h-full block"></canvas>
           <div id="playVisBadge" class="hidden absolute top-2.5 left-3 px-2.5 py-1 rounded-lg bg-sky-500/20 border border-sky-400/40 text-sky-300 text-[11px] font-extrabold">
             🔊 소리 듣기 시각화 중
+          </div>
+        </div>
+
+        <!-- 주변 소리 줄이기(노이즈 캔슬링) & 입·출력 소리 크기 조절 패널 -->
+        <div class="mb-4 p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col gap-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-extrabold text-slate-200 flex items-center gap-1.5">
+              <span>🔇 주변 소리 줄이기</span>
+              <span id="noiseModeDesc" class="text-[11px] font-semibold text-indigo-300">(교실 집중 모드)</span>
+            </span>
+            <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+              <button type="button" id="nc-raw" onclick="setNoiseMode('raw')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition">🎵 원음 그대로</button>
+              <button type="button" id="nc-classroom" onclick="setNoiseMode('classroom')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-indigo-600 text-white shadow-xs transition">🏫 교실 집중</button>
+              <button type="button" id="nc-strong" onclick="setNoiseMode('strong')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition">🔇 강력 차단</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-slate-800/80">
+            <!-- 마이크 입력 수음 크기 & 실시간 레벨 게이지 -->
+            <div class="bg-slate-900/90 rounded-xl p-2.5 border border-slate-800">
+              <div class="flex items-center justify-between text-xs mb-1.5">
+                <span class="font-extrabold text-rose-300">🎙️ 마이크 수음 크기</span>
+                <div class="flex items-center gap-1.5">
+                  <span id="micGainValue" class="font-mono font-extrabold text-white">100%</span>
+                  <button type="button" onclick="resetMicGain()" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300">기본</button>
+                </div>
+              </div>
+              <input id="micGainSlider" type="range" min="0" max="200" value="100" class="studio-slider w-full mb-2" />
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold text-slate-400 shrink-0">수음 감도</span>
+                <div class="flex-1 h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                  <div id="micLevelBar" class="h-full w-0 bg-emerald-400 transition-all duration-75"></div>
+                </div>
+                <span id="micLevelHint" class="text-[10px] font-bold text-slate-400 shrink-0">대기</span>
+              </div>
+            </div>
+
+            <!-- 스피커 출력 소리 크기 -->
+            <div class="bg-slate-900/90 rounded-xl p-2.5 border border-slate-800 flex flex-col justify-between">
+              <div class="flex items-center justify-between text-xs mb-1.5">
+                <span class="font-extrabold text-sky-300">🔊 스피커 출력 크기</span>
+                <div class="flex items-center gap-1.5">
+                  <span id="speakerVolValue" class="font-mono font-extrabold text-white">100%</span>
+                  <button type="button" onclick="resetSpeakerVolume()" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300">기본</button>
+                </div>
+              </div>
+              <input id="speakerVolSlider" type="range" min="0" max="150" value="100" class="studio-slider w-full mb-2" />
+              <div class="flex justify-between text-[10px] font-semibold text-slate-400">
+                <span>무음(0%)</span>
+                <span>기본(100%)</span>
+                <span>크게(150%)</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -238,27 +299,33 @@
           </div>
         </div>
       </section>
+
     </div>
   </main>
 
-  <!-- 마이크 권한 안내 모달 (갤럭시 패드 크롬 최적화) -->
-  <div id="micModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
+  <!-- 마이크 권한 안내 모달 (앱 시작 시 바로 표시 + 갤럭시 패드 크롬 최적화) -->
+  <div id="micModal" class="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-extrabold text-slate-900">🎤 마이크 권한 연결하기</h3>
+        <h3 class="text-lg font-extrabold text-slate-900">🎤 마이크 켜고 시작하기</h3>
         <button id="closeMicModalBtn" type="button" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 font-bold text-lg hover:bg-slate-200">✕</button>
       </div>
       <p class="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">
-        교실의 악기와 도구 소리를 녹음하려면 태블릿 마이크 허용이 필요합니다. 아래 버튼을 누른 뒤 화면 위쪽 팝업에서 <strong>[허용]</strong>을 눌러주세요.
+        교실 도구와 악기 소리를 녹음하려면 태블릿 마이크 허용이 필요해요. 아래 빨간 버튼을 누른 뒤 화면 위쪽 창에서 <strong>[허용]</strong>을 눌러주세요!
       </p>
       <div id="micBlockedGuide" class="hidden mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
         <p class="font-extrabold mb-1">⚠️ 마이크 권한이 차단되어 있을 때 해결 방법:</p>
         <p>1. 크롬 주소창 왼쪽의 <strong>자물쇠(또는 설정) 아이콘</strong> 터치</p>
         <p>2. <strong>[권한] → [마이크]</strong>를 <strong>[허용]</strong>으로 변경 후 새로고침</p>
       </div>
-      <button id="requestMicBtn" type="button" class="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-sm shadow-md active:scale-95 transition">
-        마이크 권한 허용하기
-      </button>
+      <div class="flex flex-col gap-2">
+        <button id="requestMicBtn" type="button" class="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-sm shadow-md active:scale-95 transition">
+          🎙️ 지금 바로 마이크 켜기 (허용)
+        </button>
+        <button id="skipMicModalBtn" type="button" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs active:scale-95 transition">
+          건반 악기만 먼저 쓸게요 (나중에 켜기)
+        </button>
+      </div>
     </div>
   </div>
 
@@ -331,11 +398,48 @@
     let audioCtx = null;
     let micStream = null;
     let micSource = null;
+    let micHighpass = null;
+    let micInputGain = null;
+    let micCompressor = null;
+    let micGateGain = null;
+    let micAnalyser = null;
     let monitorGain = null;
+    let masterOutputGain = null;
     let synthBus = null;
     let analyserNode = null;
     let mixDestination = null;
     let noiseBuffer = null;
+
+    let currentNoiseMode = 'classroom';
+    let micGainPercent = 100;
+    let speakerVolumePercent = 100;
+
+    const NOISE_MODES = {
+      raw: {
+        desc: '(원음 그대로 · 섬세한 울림)',
+        highpassFreq: 15,
+        gateThreshold: 0,
+        gateFloor: 1,
+        useComp: false,
+        constraints: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+      },
+      classroom: {
+        desc: '(교실 집중 · 옆 모둠 잡음 감소)',
+        highpassFreq: 105,
+        gateThreshold: 0.012,
+        gateFloor: 0.14,
+        useComp: true,
+        constraints: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }
+      },
+      strong: {
+        desc: '(강력 차단 · 주변 시끄러울 때)',
+        highpassFreq: 185,
+        gateThreshold: 0.028,
+        gateFloor: 0.02,
+        useComp: true,
+        constraints: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }
+      }
+    };
 
     let currentInstrument = 'piano';
     const activeVoices = new Map();
@@ -401,13 +505,17 @@
         analyserNode.fftSize = 128;
 
         mixDestination = audioCtx.createMediaStreamDestination();
+        masterOutputGain = audioCtx.createGain();
+        masterOutputGain.gain.value = speakerVolumePercent / 100;
+        masterOutputGain.connect(audioCtx.destination);
+
         monitorGain = audioCtx.createGain();
         monitorGain.gain.value = $('monitorToggle').checked ? 0.85 : 0;
 
         synthBus.connect(analyserNode);
         synthBus.connect(mixDestination);
-        synthBus.connect(audioCtx.destination);
-        monitorGain.connect(audioCtx.destination);
+        synthBus.connect(masterOutputGain);
+        monitorGain.connect(masterOutputGain);
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
@@ -526,14 +634,14 @@
         body2.frequency.value = 620;
         body2.gain.value = 5;
 
-        const lp = audioCtx.createBiquadFilter();
-        lp.type = 'lowpass';
-        lp.frequency.setValueAtTime(freq * 6, now);
-        lp.frequency.exponentialRampToValueAtTime(freq * 1.6, now + 0.28);
+        const pluckFilter = audioCtx.createBiquadFilter();
+        pluckFilter.type = 'lowpass';
+        pluckFilter.frequency.setValueAtTime(freq * 6.5, now);
+        pluckFilter.frequency.exponentialRampToValueAtTime(freq * 1.8, now + 0.28);
 
         body1.connect(body2);
-        body2.connect(lp);
-        lp.connect(masterGain);
+        body2.connect(pluckFilter);
+        pluckFilter.connect(masterGain);
 
         const osc1 = audioCtx.createOscillator();
         osc1.type = 'triangle';
@@ -542,65 +650,91 @@
         const osc2 = audioCtx.createOscillator();
         osc2.type = 'sine';
         osc2.frequency.setValueAtTime(freq * 2, now);
-        const g2 = audioCtx.createGain();
-        g2.gain.setValueAtTime(0.25, now);
-        g2.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+        const osc2Gain = audioCtx.createGain();
+        osc2Gain.gain.value = 0.25;
 
         osc1.connect(body1);
-        osc2.connect(g2);
-        g2.connect(body1);
+        osc2.connect(osc2Gain);
+        osc2Gain.connect(body1);
+
+        const nail = audioCtx.createBufferSource();
+        nail.buffer = noiseBuffer;
+        const nFilter = audioCtx.createBiquadFilter();
+        nFilter.type = 'bandpass';
+        nFilter.frequency.value = freq * 3;
+        const nGain = audioCtx.createGain();
+        nGain.gain.setValueAtTime(0.18, now);
+        nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+        nail.connect(nFilter);
+        nFilter.connect(nGain);
+        nGain.connect(masterGain);
+        nail.start(now);
+        nail.stop(now + 0.035);
 
         masterGain.gain.setValueAtTime(0.001, now);
-        masterGain.gain.linearRampToValueAtTime(0.8, now + 0.008);
-        masterGain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+        masterGain.gain.linearRampToValueAtTime(0.85, now + 0.008);
+        masterGain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
 
         [osc1, osc2].forEach((o) => {
           o.start(now);
-          o.stop(now + 0.78);
+          o.stop(now + 0.9);
         });
-      } else {
-        // 바이올린: 활 긋는 느린 어택 + 지연 비브라토 + 악기 몸통 공명(290Hz, 490Hz)
-        const f1 = audioCtx.createBiquadFilter();
-        f1.type = 'peaking';
-        f1.frequency.value = 290;
-        f1.gain.value = 6;
+      } else if (currentInstrument === 'violin') {
+        // 바이올린: 부드러운 활 어택 + 지연 비브라토 + 현악기 울림통 포먼트(290Hz, 490Hz)
+        const formant1 = audioCtx.createBiquadFilter();
+        formant1.type = 'peaking';
+        formant1.frequency.value = 290;
+        formant1.gain.value = 6;
 
-        const f2 = audioCtx.createBiquadFilter();
-        f2.type = 'peaking';
-        f2.frequency.value = 490;
-        f2.gain.value = 5;
+        const formant2 = audioCtx.createBiquadFilter();
+        formant2.type = 'peaking';
+        formant2.frequency.value = 490;
+        formant2.gain.value = 5;
 
-        const lp = audioCtx.createBiquadFilter();
-        lp.type = 'lowpass';
-        lp.frequency.value = freq * 4.2;
+        const bowFilter = audioCtx.createBiquadFilter();
+        bowFilter.type = 'lowpass';
+        bowFilter.frequency.setValueAtTime(freq * 4.5, now);
 
-        f1.connect(f2);
-        f2.connect(lp);
-        lp.connect(masterGain);
+        formant1.connect(formant2);
+        formant2.connect(bowFilter);
+        bowFilter.connect(masterGain);
 
-        const osc = audioCtx.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(freq, now);
+        const osc1 = audioCtx.createOscillator();
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(freq, now);
 
-        const vibrato = audioCtx.createOscillator();
-        vibrato.type = 'sine';
-        vibrato.frequency.value = 5.6;
+        const osc2 = audioCtx.createOscillator();
+        osc2.type = 'sawtooth';
+        osc2.frequency.setValueAtTime(freq, now);
+        osc2.detune.setValueAtTime(5, now);
+        const osc2Gain = audioCtx.createGain();
+        osc2Gain.gain.value = 0.35;
+
+        const vibLfo = audioCtx.createOscillator();
+        vibLfo.type = 'sine';
+        vibLfo.frequency.value = 5.4;
         const vibGain = audioCtx.createGain();
         vibGain.gain.setValueAtTime(0, now);
-        vibGain.gain.linearRampToValueAtTime(6.5, now + 0.35);
-        vibrato.connect(vibGain);
-        vibGain.connect(osc.frequency);
+        vibGain.gain.linearRampToValueAtTime(freq * 0.011, now + 0.35);
+        vibLfo.connect(vibGain);
+        vibGain.connect(osc1.frequency);
+        vibGain.connect(osc2.frequency);
 
-        osc.connect(f1);
+        osc1.connect(formant1);
+        osc2.connect(osc2Gain);
+        osc2Gain.connect(formant1);
+
         masterGain.gain.setValueAtTime(0.001, now);
-        masterGain.gain.linearRampToValueAtTime(0.55, now + 0.16);
+        masterGain.gain.linearRampToValueAtTime(0.55, now + 0.14);
+        masterGain.gain.linearRampToValueAtTime(0.48, now + 0.3);
 
-        osc.start(now);
-        vibrato.start(now);
-        stopList.push(osc, vibrato);
+        [osc1, osc2, vibLfo].forEach((o) => {
+          o.start(now);
+          stopList.push(o);
+        });
       }
 
-      activeVoices.set(pointerId, { keyEl, masterGain, stopList, sustain });
+      activeVoices.set(pointerId, { masterGain, stopList, keyEl, sustain });
     }
 
     function releaseNote(pointerId) {
@@ -632,51 +766,171 @@
 
     function buildKeyboard() {
       const area = $('keyboardArea');
-      area.innerHTML = NOTES.map((n, idx) => `
-        <button type="button" data-note-idx="${idx}"
-          style="background-color: ${n.bg}; border-color: ${n.border};"
-          class="piano-key white-key flex-1 h-full rounded-xl border-b-4 text-white flex flex-col items-center justify-end pb-2.5 shadow-sm">
-          ${n.sub ? `<span class="text-[9px] sm:text-[10px] font-bold opacity-90 leading-none mb-0.5">${n.sub}</span>` : ''}
-          <span class="text-sm sm:text-base font-extrabold drop-shadow-xs">${n.name}</span>
-        </button>
-      `).join('');
+      if (!area) return;
+      area.innerHTML = '';
 
-      const pointerNoteMap = new Map();
+      NOTES.forEach((note, idx) => {
+        const key = document.createElement('button');
+        key.type = 'button';
+        key.dataset.noteIdx = String(idx);
+        key.style.backgroundColor = note.bg;
+        key.style.borderColor = note.border;
+        key.className = 'piano-key white-key flex-1 h-full rounded-xl border-b-4 text-white font-extrabold flex flex-col items-center justify-end pb-2.5 shadow-sm cursor-pointer';
+        key.innerHTML = `
+          ${note.sub ? `<span class="text-[9px] sm:text-[10px] opacity-90 leading-none mb-0.5">${note.sub}</span>` : ''}
+          <span class="text-sm sm:text-base leading-none">${note.name}</span>
+        `;
 
-      const getKeyFromPoint = (x, y) => {
-        const el = document.elementFromPoint(x, y);
-        return el ? el.closest('.piano-key') : null;
-      };
+        key.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          if (key.hasPointerCapture && key.hasPointerCapture(e.pointerId)) {
+            key.releasePointerCapture(e.pointerId);
+          }
+          triggerNote(e.pointerId, note, key);
+        });
 
-      area.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        const key = e.target.closest('.piano-key');
-        if (!key) return;
-        area.setPointerCapture(e.pointerId);
-        const idx = Number(key.dataset.noteIdx);
-        pointerNoteMap.set(e.pointerId, idx);
-        triggerNote(e.pointerId, NOTES[idx], key);
+        key.addEventListener('pointerenter', (e) => {
+          if (e.buttons > 0 || activeVoices.has(e.pointerId)) {
+            triggerNote(e.pointerId, note, key);
+          }
+        });
+
+        key.addEventListener('pointerup', (e) => releaseNote(e.pointerId));
+        key.addEventListener('pointercancel', (e) => releaseNote(e.pointerId));
+        key.addEventListener('pointerleave', (e) => {
+          if (activeVoices.has(e.pointerId)) releaseNote(e.pointerId);
+        });
+
+        area.appendChild(key);
       });
+    }
 
-      area.addEventListener('pointermove', (e) => {
-        if (!pointerNoteMap.has(e.pointerId)) return;
-        const key = getKeyFromPoint(e.clientX, e.clientY);
-        if (!key) return;
-        const idx = Number(key.dataset.noteIdx);
-        if (pointerNoteMap.get(e.pointerId) !== idx) {
-          pointerNoteMap.set(e.pointerId, idx);
-          triggerNote(e.pointerId, NOTES[idx], key);
+    // 주변 소리 줄이기(노이즈 캔슬링) & 입·출력 볼륨 조절
+    function applyNoiseModeToNodes() {
+      const cfg = NOISE_MODES[currentNoiseMode] || NOISE_MODES.classroom;
+      if (micHighpass && audioCtx) {
+        micHighpass.frequency.setTargetAtTime(cfg.highpassFreq, audioCtx.currentTime, 0.02);
+      }
+      if (micCompressor && audioCtx) {
+        micCompressor.threshold.setTargetAtTime(cfg.useComp ? -18 : 0, audioCtx.currentTime, 0.02);
+        micCompressor.ratio.setTargetAtTime(cfg.useComp ? 4 : 1, audioCtx.currentTime, 0.02);
+      }
+      if (micGateGain && !cfg.useComp && audioCtx) {
+        micGateGain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.02);
+      }
+    }
+
+    async function setNoiseMode(mode) {
+      if (!NOISE_MODES[mode]) return;
+      currentNoiseMode = mode;
+      const cfg = NOISE_MODES[mode];
+
+      document.querySelectorAll('.nc-btn').forEach((btn) => {
+        btn.className = 'nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition';
+      });
+      const activeBtn = $(`nc-${mode}`);
+      if (activeBtn) {
+        activeBtn.className = 'nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-indigo-600 text-white shadow-xs transition';
+      }
+      $('noiseModeDesc').textContent = cfg.desc;
+      applyNoiseModeToNodes();
+
+      if (micStream) {
+        const track = micStream.getAudioTracks()[0];
+        if (track && track.applyConstraints) {
+          try {
+            await track.applyConstraints(cfg.constraints);
+          } catch (e) {}
         }
-      });
+      }
+    }
 
-      const endPointer = (e) => {
-        if (!pointerNoteMap.has(e.pointerId)) return;
-        pointerNoteMap.delete(e.pointerId);
-        releaseNote(e.pointerId);
-      };
+    function updateMicGain(pct) {
+      micGainPercent = Math.max(0, Math.min(200, Number(pct)));
+      $('micGainSlider').value = micGainPercent;
+      $('micGainValue').textContent = `${micGainPercent}%`;
+      if (micInputGain && audioCtx) {
+        micInputGain.gain.setTargetAtTime(micGainPercent / 100, audioCtx.currentTime, 0.015);
+      }
+    }
 
-      area.addEventListener('pointerup', endPointer);
-      area.addEventListener('pointercancel', endPointer);
+    function resetMicGain() {
+      updateMicGain(100);
+      showToast('마이크 수음 크기를 기본(100%)으로 맞췄습니다.');
+    }
+
+    function updateSpeakerVolume(pct) {
+      speakerVolumePercent = Math.max(0, Math.min(150, Number(pct)));
+      $('speakerVolSlider').value = speakerVolumePercent;
+      $('speakerVolValue').textContent = `${speakerVolumePercent}%`;
+      if (masterOutputGain && audioCtx) {
+        masterOutputGain.gain.setTargetAtTime(speakerVolumePercent / 100, audioCtx.currentTime, 0.015);
+      }
+    }
+
+    function resetSpeakerVolume() {
+      updateSpeakerVolume(100);
+      showToast('스피커 출력 크기를 기본(100%)으로 맞췄습니다.');
+    }
+
+    $('micGainSlider').addEventListener('input', (e) => updateMicGain(e.target.value));
+    $('speakerVolSlider').addEventListener('input', (e) => updateSpeakerVolume(e.target.value));
+
+    function updateMicGateAndMeter() {
+      const bar = $('micLevelBar');
+      const hint = $('micLevelHint');
+      if (!micAnalyser || !micStream) {
+        if (bar) bar.style.width = '0%';
+        if (hint) {
+          hint.textContent = '미연결';
+          hint.className = 'text-[10px] font-bold text-slate-400 shrink-0';
+        }
+        return;
+      }
+
+      const data = new Uint8Array(micAnalyser.fftSize);
+      micAnalyser.getByteTimeDomainData(data);
+      let sumSq = 0;
+      for (let i = 0; i < data.length; i++) {
+        const v = (data[i] - 128) / 128;
+        sumSq += v * v;
+      }
+      const rms = Math.sqrt(sumSq / data.length);
+
+      // 스마트 노이즈 게이트 적용
+      const cfg = NOISE_MODES[currentNoiseMode] || NOISE_MODES.classroom;
+      if (micGateGain && audioCtx) {
+        if (cfg.gateThreshold <= 0) {
+          micGateGain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.015);
+        } else {
+          const targetGain = rms >= cfg.gateThreshold ? 1 : cfg.gateFloor;
+          const timeConst = rms >= cfg.gateThreshold ? 0.008 : 0.065;
+          micGateGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, timeConst);
+        }
+      }
+
+      // 실시간 수음 감도 게이지 표시
+      const levelPct = Math.min(100, Math.round(rms * 380));
+      if (bar && hint) {
+        bar.style.width = `${levelPct}%`;
+        if (levelPct > 82) {
+          bar.className = 'h-full bg-rose-500 transition-all duration-75';
+          hint.textContent = '너무 큼!';
+          hint.className = 'text-[10px] font-extrabold text-rose-400 shrink-0';
+        } else if (levelPct > 55) {
+          bar.className = 'h-full bg-amber-400 transition-all duration-75';
+          hint.textContent = '큼';
+          hint.className = 'text-[10px] font-bold text-amber-300 shrink-0';
+        } else if (levelPct > 6) {
+          bar.className = 'h-full bg-emerald-400 transition-all duration-75';
+          hint.textContent = '좋음';
+          hint.className = 'text-[10px] font-bold text-emerald-300 shrink-0';
+        } else {
+          bar.className = 'h-full bg-slate-500 transition-all duration-75';
+          hint.textContent = '조용함';
+          hint.className = 'text-[10px] font-bold text-slate-400 shrink-0';
+        }
+      }
     }
 
     // 마이크 연결 및 권한 모달
@@ -687,11 +941,38 @@
         return true;
       }
       try {
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const cfg = NOISE_MODES[currentNoiseMode] || NOISE_MODES.classroom;
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: cfg.constraints });
+
         micSource = audioCtx.createMediaStreamSource(micStream);
-        micSource.connect(analyserNode);
-        micSource.connect(mixDestination);
-        micSource.connect(monitorGain);
+        micHighpass = audioCtx.createBiquadFilter();
+        micHighpass.type = 'highpass';
+
+        micInputGain = audioCtx.createGain();
+        micInputGain.gain.value = micGainPercent / 100;
+
+        micCompressor = audioCtx.createDynamicsCompressor();
+        micCompressor.knee.value = 18;
+        micCompressor.attack.value = 0.004;
+        micCompressor.release.value = 0.16;
+
+        micAnalyser = audioCtx.createAnalyser();
+        micAnalyser.fftSize = 256;
+
+        micGateGain = audioCtx.createGain();
+        micGateGain.gain.value = 1;
+
+        applyNoiseModeToNodes();
+
+        micSource.connect(micHighpass);
+        micHighpass.connect(micInputGain);
+        micInputGain.connect(micCompressor);
+        micCompressor.connect(micAnalyser);
+        micCompressor.connect(micGateGain);
+
+        micGateGain.connect(analyserNode);
+        micGateGain.connect(mixDestination);
+        micGateGain.connect(monitorGain);
 
         $('micStatusDot').className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
         $('micStatusText').textContent = '마이크 연결됨';
@@ -710,11 +991,14 @@
       }
     }
 
-    $('openMicModalBtn').addEventListener('click', () => $('micModal').classList.remove('hidden'));
-    $('closeMicModalBtn').addEventListener('click', () => {
+    const dismissMicStartupModal = () => {
       micPromptDismissed = true;
       $('micModal').classList.add('hidden');
-    });
+    };
+
+    $('openMicModalBtn').addEventListener('click', () => $('micModal').classList.remove('hidden'));
+    $('closeMicModalBtn').addEventListener('click', dismissMicStartupModal);
+    $('skipMicModalBtn').addEventListener('click', dismissMicStartupModal);
     $('requestMicBtn').addEventListener('click', () => connectMicrophone(true));
 
     $('monitorToggle').addEventListener('change', (e) => {
@@ -1151,7 +1435,7 @@
         const src = audioCtx.createBufferSource();
         src.buffer = clip.audioBuffer;
         src.connect(analyserNode);
-        src.connect(audioCtx.destination);
+        src.connect(masterOutputGain);
         src.start(playStartCtxTime, safeOffset);
         activePlaySources.push(src);
         $('playbackTargetLabel').textContent = `단독 듣기: ${soloClipIndex + 1}. ${clip.name}`;
@@ -1162,7 +1446,7 @@
           const src = audioCtx.createBufferSource();
           src.buffer = clip.audioBuffer;
           src.connect(analyserNode);
-          src.connect(audioCtx.destination);
+          src.connect(masterOutputGain);
           if (clip.startTime >= safeOffset) {
             src.start(playStartCtxTime + Math.max(0, clip.startTime - safeOffset), 0);
           } else {
@@ -1599,6 +1883,7 @@
 
     function drawWaveform() {
       requestAnimationFrame(drawWaveform);
+      updateMicGateAndMeter();
 
       if (isMixPlaying) {
         const total = getActiveTargetDuration();
@@ -1706,6 +1991,10 @@
       resizeCanvas();
       drawWaveform();
       setupBackButtonGuard();
+      setNoiseMode('classroom');
+      if (!micStream) {
+        $('micModal').classList.remove('hidden');
+      }
     };
   </script>
 </body>
