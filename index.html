@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>부족 음악회: 우리가 소리를 만들었어요</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', 'Noto Sans KR', sans-serif; -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden max-w-md w-[92%] bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-semibold text-center transition-all"></div>
+
+  <div id="iframeBanner" class="hidden bg-amber-500 text-slate-950 px-4 py-3 shadow-md">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <p class="text-sm font-bold">⚠️ 구글 사이트 내장 화면에서는 보안 정책상 마이크가 차단될 수 있습니다. 아래 버튼으로 새 창에서 열어주세요.</p>
+      <button type="button" onclick="openStandalone()" class="bg-slate-900 text-white text-sm font-bold px-4 py-2 rounded-xl shadow active:scale-95">새 창에서 열어서 마이크 켜기 ↗</button>
+    </div>
+  </div>
+
+  <div id="micModal" class="fixed inset-0 z-40 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-center">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-3xl">🎤</div>
+      <h2 class="text-2xl font-extrabold text-slate-900 mb-2">마이크 연결하기</h2>
+      <p class="text-sm text-slate-600 mb-5 leading-relaxed">우리 부족의 악기 소리를 녹음하려면 마이크 권한이 필요합니다. 아래 버튼을 누른 뒤 브라우저 팝업에서 <strong>[허용]</strong>을 눌러주세요.</p>
+      
+      <div id="micErrorBox" class="hidden mb-5 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-left text-xs text-rose-800 leading-relaxed"></div>
+
+      <div class="flex flex-col gap-2.5">
+        <button id="reqMicBtn" type="button" class="w-full py-4 px-5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-base shadow-lg active:scale-95 transition">마이크 권한 허용하기</button>
+        <button id="modalNewTabBtn" type="button" onclick="openStandalone()" class="hidden w-full py-3.5 px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-sm shadow active:scale-95 transition">새 창에서 열어서 마이크 켜기 ↗</button>
+        <button id="closeMicModalBtn" type="button" class="w-full py-2.5 text-slate-400 hover:text-slate-600 text-xs font-semibold">먼저 화면 둘러보기</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">🥁 부족 음악회: 우리가 소리를 만들었어요</h1>
+        <p class="text-xs sm:text-sm text-slate-500 font-medium">우리 부족만의 악기와 소리를 모아 멋진 음악을 만들어 보세요!</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <button id="micStatusBtn" type="button" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs sm:text-sm font-bold active:scale-95">
+          <span id="micDot" class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+          <span id="micStatusText">마이크 대기 중</span>
+        </button>
+
+        <label class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-200 cursor-pointer select-none">
+          <input id="monitorToggle" type="checkbox" class="w-4 h-4 accent-rose-600 rounded" />
+          <div class="leading-tight">
+            <span class="block text-xs sm:text-sm font-bold text-slate-800">실시간 모니터링</span>
+            <span class="block text-[10px] text-slate-500">이어폰 착용 시 사용</span>
+          </div>
+        </label>
+
+        <button id="openQrBtn" type="button" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-xs active:scale-95">학생 안내 QR 코드</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <div class="lg:col-span-5 flex flex-col gap-6">
+      <section class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
+        <h2 class="text-base sm:text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
+          <span class="w-7 h-7 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm">1</span>
+          내 활동 정보 적기
+        </h2>
+        <div class="flex flex-col gap-3.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">모둠 이름</label>
+            <input id="groupName" type="text" placeholder="예: 번개 부족" class="w-full px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">모둠 노래 제목</label>
+            <input id="songTitle" type="text" placeholder="예: 숲속의 빗소리 행진곡" class="w-full px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">사용한 도구</label>
+            <input id="toolsUsed" type="text" placeholder="예: 페트병 마라카스, 책상 북, 쇠젓가락" class="w-full px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1.5">모둠원 이름</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <input type="text" placeholder="1번 이름" class="member-input w-full px-2.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
+              <input type="text" placeholder="2번 이름" class="member-input w-full px-2.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
+              <input type="text" placeholder="3번 이름" class="member-input w-full px-2.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
+              <input type="text" placeholder="4번 이름" class="member-input w-full px-2.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
+        <h2 class="text-base sm:text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
+          <span class="w-7 h-7 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm">2</span>
+          우리 부족 도구 &amp; 활동 사진
+        </h2>
+        <input id="albumInput" type="file" accept="image/*" class="hidden" />
+        <input id="cameraInput" type="file" accept="image/*" capture="environment" class="hidden" />
+        <div class="grid grid-cols-2 gap-2.5 mb-3">
+          <button type="button" onclick="document.getElementById('albumInput').click()" class="py-3.5 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm border border-slate-200 active:scale-95 transition">🖼️ 앨범에서 사진 선택</button>
+          <button type="button" onclick="document.getElementById('cameraInput').click()" class="py-3.5 px-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs sm:text-sm border border-emerald-200 active:scale-95 transition">📷 카메라로 바로 찍기</button>
+        </div>
+        <div id="photoPreviewWrap" class="hidden relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
+          <img id="photoPreview" alt="활동 사진" class="w-full max-h-72 object-contain mx-auto" />
+          <button id="removePhotoBtn" type="button" class="absolute top-2.5 right-2.5 px-3 py-1.5 rounded-xl bg-slate-900/80 text-white text-xs font-bold hover:bg-rose-600 transition">사진 삭제</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="lg:col-span-7 flex flex-col gap-6">
+      <section class="bg-slate-900 rounded-3xl p-5 sm:p-6 text-white shadow-lg">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span id="recBadge" class="w-3 h-3 rounded-full bg-slate-500"></span>
+            <h2 class="text-base sm:text-lg font-extrabold">소리 녹음 스튜디오</h2>
+          </div>
+          <span id="timerDisplay" class="font-mono text-2xl sm:text-3xl font-extrabold text-rose-400 tracking-wider">00:00</span>
+        </div>
+
+        <div id="canvasBox" class="w-full h-28 bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden mb-4">
+          <canvas id="visualizer" class="w-full h-full block"></canvas>
+        </div>
+
+        <div id="rerecordBanner" class="hidden mb-3 px-4 py-2.5 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-between text-xs sm:text-sm">
+          <span id="rerecordLabel" class="font-bold text-amber-300">구간 1 다시 녹음 준비됨</span>
+          <button type="button" onclick="cancelRerecord()" class="text-amber-200 underline font-semibold">취소</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <button id="recordBtn" type="button" class="sm:col-span-2 py-4 px-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition">🎙️ 녹음 시작</button>
+          <button id="playAllBtn" type="button" class="py-4 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm sm:text-base shadow-lg active:scale-95 transition">▶️ 전체 이어듣기</button>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">녹음된 소리 구간 목록</h2>
+            <p class="text-xs text-slate-500">녹음 중간에도 구간별로 바로 들어보고 마음에 안 들면 다시 녹음하세요.</p>
+          </div>
+          <button id="exportMp3Btn" type="button" class="px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-sm active:scale-95 transition">💾 MP3 파일로 저장</button>
+        </div>
+
+        <div id="clipList" class="flex flex-col gap-3">
+          <div class="py-10 px-4 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-slate-400 text-sm font-semibold">
+            아직 녹음된 구간이 없습니다. 위에서 [녹음 시작] 버튼을 눌러 소리를 담아보세요!
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="qrModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div id="qrCard" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-extrabold text-slate-900">학생 안내 QR 코드 만들기</h3>
+        <button id="closeQrBtn" type="button" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 font-bold text-lg hover:bg-slate-200">✕</button>
+      </div>
+      <p class="text-xs text-slate-500 mb-3">구글 사이트에 게시한 실제 주소를 입력하면 학생들이 태블릿으로 바로 접속할 수 있습니다.</p>
+      <div class="flex gap-2 mb-4">
+        <input id="qrUrlInput" type="url" placeholder="예: https://sites.google.com/view/우리반음악회" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none" />
+        <button id="makeQrBtn" type="button" class="px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-xs sm:text-sm font-bold shrink-0 active:scale-95">QR 코드 만들기</button>
+      </div>
+      <div id="qrDisplayArea" class="flex flex-col items-center justify-center p-5 bg-slate-50 rounded-2xl border border-slate-200 min-h-[230px]">
+        <div id="qrcode" class="bg-white p-3 rounded-2xl shadow-xs"></div>
+        <p id="qrCaption" class="mt-3 text-xs font-bold text-slate-600 break-all text-center"></p>
+      </div>
+      <button id="enlargeQrBtn" type="button" class="mt-4 w-full py-3 rounded-2xl bg-slate-900 text-white text-xs sm:text-sm font-bold active:scale-95">🖥️ 전자칠판용 크게 보기</button>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    let audioCtx = null;
+    let micStream = null;
+    let sourceNode = null;
+    let analyserNode = null;
+    let monitorGain = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let clips = [];
+    let isRecording = false;
+    let rerecordIndex = -1;
+    let recStartTime = 0;
+    let recTimerId = null;
+
+    let activeAudio = null;
+    let playingClipIndex = -1;
+    let isPlayingAll = false;
+    let playAllIndex = 0;
+
+    let photoUrl = null;
+    let isQrLarge = false;
+
+    const isInIframe = (() => {
+      try { return window.self !== window.top; } catch (e) { return true; }
+    })();
+
+    const isPolicyBlocked = (() => {
+      try {
+        const fp = document.featurePolicy || document.permissionsPolicy;
+        return fp && typeof fp.allowsFeature === 'function' && !fp.allowsFeature('microphone');
+      } catch (e) {
+        return false;
+      }
+    })();
+
+    function showToast(msg, duration = 3200) {
+      const toast = $('toast');
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      clearTimeout(toast._tid);
+      toast._tid = setTimeout(() => toast.classList.add('hidden'), duration);
+    }
+
+    function openStandalone() {
+      window.open(location.href, '_blank', 'noopener');
+    }
+
+    function formatTime(sec) {
+      const s = Math.max(0, Math.floor(sec));
+      return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    function updateMicStatus(state) {
+      const btn = $('micStatusBtn');
+      const dot = $('micDot');
+      const txt = $('micStatusText');
+      if (state === 'connected') {
+        btn.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-bold active:scale-95';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+        txt.textContent = '마이크 연결됨';
+      } else if (state === 'iframe') {
+        btn.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm font-bold active:scale-95';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+        txt.textContent = '새 창에서 열기 필요';
+      } else {
+        btn.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs sm:text-sm font-bold active:scale-95';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
+        txt.textContent = '마이크 대기 중';
+      }
+    }
+
+    function initEnvironment() {
+      if (isInIframe || isPolicyBlocked) {
+        $('iframeBanner').classList.remove('hidden');
+        $('modalNewTabBtn').classList.remove('hidden');
+        updateMicStatus('iframe');
+      }
+      const urlInput = $('qrUrlInput');
+      if (location.href.startsWith('http') && !location.href.includes('googleusercontent.com') && !location.href.includes('gstatic.com')) {
+        urlInput.value = location.href;
+      }
+      renderQrCode();
+      resizeCanvas();
+    }
+
+    function ensureAudioContext() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+    }
+
+    function applyMonitoringState() {
+      if (!sourceNode || !monitorGain || !audioCtx) return;
+      try { monitorGain.disconnect(); } catch (e) {}
+      if ($('monitorToggle').checked) {
+        monitorGain.connect(audioCtx.destination);
+      }
+    }
+
+    async function requestMicrophone() {
+      ensureAudioContext();
+      const btn = $('reqMicBtn');
+      const errBox = $('micErrorBox');
+      btn.disabled = true;
+      btn.textContent = '연결 중... 브라우저에서 [허용]을 눌러주세요';
+      errBox.classList.add('hidden');
+
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw Object.assign(new Error('HTTPS 보안 연결이 필요합니다.'), { name: 'InsecureContextError' });
+        }
+
+        if (micStream) {
+          micStream.getTracks().forEach((t) => t.stop());
+        }
+
+        try {
+          micStream = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true, noiseSuppression: true }
+          });
+        } catch (constraintErr) {
+          if (constraintErr.name === 'OverconstrainedError') {
+            micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          } else {
+            throw constraintErr;
+          }
+        }
+
+        sourceNode = audioCtx.createMediaStreamSource(micStream);
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 128;
+        monitorGain = audioCtx.createGain();
+        monitorGain.gain.value = 0.85;
+
+        sourceNode.connect(analyserNode);
+        sourceNode.connect(monitorGain);
+        applyMonitoringState();
+
+        $('micModal').classList.add('hidden');
+        $('iframeBanner').classList.add('hidden');
+        updateMicStatus('connected');
+        showToast('🎤 마이크가 연결되었습니다! 소리를 녹음해 보세요.');
+      } catch (err) {
+        let guidance = '';
+        if ((isInIframe || isPolicyBlocked) && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
+          guidance = '<strong>구글 사이트(내장 프레임) 보안 차단:</strong><br>구글 사이트 안에 삽입된 화면에서는 브라우저가 마이크 팝업을 차단합니다. 아래 주황색 <strong>[새 창에서 열어서 마이크 켜기]</strong> 버튼을 눌러 새 탭에서 실행해 주세요.';
+          $('modalNewTabBtn').classList.remove('hidden');
+          $('iframeBanner').classList.remove('hidden');
+          updateMicStatus('iframe');
+        } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          guidance = '<strong>마이크 권한이 차단되어 있습니다:</strong><br>주소창 왼쪽의 <strong>자물쇠</strong> 아이콘을 눌러 마이크 권한을 <strong>[허용]</strong>으로 바꾼 뒤 페이지를 새로고침 해주세요.';
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          guidance = '<strong>마이크 장치를 찾을 수 없습니다:</strong><br>태블릿에 마이크가 연결되어 있는지 확인해 주세요.';
+        } else if (!window.isSecureContext || err.name === 'InsecureContextError') {
+          guidance = '<strong>보안 연결(HTTPS) 필요:</strong><br>마이크 기능은 https:// 로 시작하는 웹사이트에서만 작동합니다.';
+        } else {
+          guidance = `<strong>마이크 연결 오류 (${err.name || 'Error'}):</strong><br>${err.message || '다시 시도하거나 새 창에서 열어주세요.'}`;
+        }
+        errBox.innerHTML = guidance;
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '마이크 권한 허용하기';
+      }
+    }
+
+    $('reqMicBtn').addEventListener('click', requestMicrophone);
+    $('closeMicModalBtn').addEventListener('click', () => $('micModal').classList.add('hidden'));
+    $('micStatusBtn').addEventListener('click', () => $('micModal').classList.remove('hidden'));
+
+    $('monitorToggle').addEventListener('change', () => {
+      ensureAudioContext();
+      if (!micStream && $('monitorToggle').checked) {
+        $('monitorToggle').checked = false;
+        $('micModal').classList.remove('hidden');
+        showToast('먼저 마이크 권한을 허용해 주세요.');
+        return;
+      }
+      applyMonitoringState();
+      showToast($('monitorToggle').checked ? '🎧 실시간 모니터링이 켜졌습니다.' : '실시간 모니터링이 꺼졌습니다.');
+    });
+
+    async function toggleRecording() {
+      if (isRecording) {
+        stopRecording();
+        return;
+      }
+
+      if (!micStream || !micStream.active) {
+        $('micModal').classList.remove('hidden');
+        showToast('녹음하려면 먼저 마이크를 연결해 주세요.');
+        return;
+      }
+
+      ensureAudioContext();
+      stopAllAudio();
+      recordedChunks = [];
+
+      mediaRecorder = new MediaRecorder(micStream);
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const duration = Math.max(1, (Date.now() - recStartTime) / 1000);
+        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+        const url = URL.createObjectURL(blob);
+
+        if (rerecordIndex >= 0 && clips[rerecordIndex]) {
+          URL.revokeObjectURL(clips[rerecordIndex].url);
+          clips[rerecordIndex] = { blob, url, duration };
+          showToast(`✅ 구간 ${rerecordIndex + 1} 소리가 새로 녹음되었습니다.`);
+          rerecordIndex = -1;
+          $('rerecordBanner').classList.add('hidden');
+        } else {
+          clips.push({ blob, url, duration });
+          showToast(`✅ 구간 ${clips.length} 녹음 완료!`);
+        }
+        renderClips();
+      };
+
+      mediaRecorder.start(200);
+      isRecording = true;
+      recStartTime = Date.now();
+      $('recBadge').className = 'w-3 h-3 rounded-full bg-rose-500 animate-ping';
+      $('recordBtn').textContent = '⏹️ 녹음 완료';
+      $('recordBtn').className = 'sm:col-span-2 py-4 px-5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition';
+      $('timerDisplay').textContent = '00:00';
+      recTimerId = setInterval(() => {
+        $('timerDisplay').textContent = formatTime((Date.now() - recStartTime) / 1000);
+      }, 250);
+    }
+
+    function stopRecording() {
+      if (!isRecording) return;
+      isRecording = false;
+      clearInterval(recTimerId);
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      $('recBadge').className = 'w-3 h-3 rounded-full bg-slate-500';
+      $('recordBtn').textContent = '🎙️ 녹음 시작';
+      $('recordBtn').className = 'sm:col-span-2 py-4 px-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition';
+    }
+
+    $('recordBtn').addEventListener('click', toggleRecording);
+
+    function startRerecord(index) {
+      if (isRecording) {
+        showToast('현재 녹음을 먼저 완료해 주세요.');
+        return;
+      }
+      rerecordIndex = index;
+      $('rerecordLabel').textContent = `구간 ${index + 1} 다시 녹음 준비됨 — 아래 [녹음 시작]을 누르세요`;
+      $('rerecordBanner').classList.remove('hidden');
+      $('recordBtn').textContent = `🎙️ 구간 ${index + 1} 다시 녹음 시작`;
+      $('recordBtn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function cancelRerecord() {
+      rerecordIndex = -1;
+      $('rerecordBanner').classList.add('hidden');
+      if (!isRecording) $('recordBtn').textContent = '🎙️ 녹음 시작';
+    }
+
+    function stopAllAudio() {
+      if (activeAudio) {
+        activeAudio.pause();
+        activeAudio.src = '';
+        activeAudio = null;
+      }
+      playingClipIndex = -1;
+      isPlayingAll = false;
+      $('playAllBtn').textContent = '▶️ 전체 이어듣기';
+      $('playAllBtn').className = 'py-4 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm sm:text-base shadow-lg active:scale-95 transition';
+      renderClips();
+    }
+
+    function toggleClipPlay(index) {
+      if (playingClipIndex === index && !isPlayingAll) {
+        stopAllAudio();
+        return;
+      }
+      stopAllAudio();
+      const clip = clips[index];
+      if (!clip) return;
+      playingClipIndex = index;
+      activeAudio = new Audio(clip.url);
+      activeAudio.onended = () => stopAllAudio();
+      activeAudio.play().catch(() => stopAllAudio());
+      renderClips();
+    }
+
+    function togglePlayAll() {
+      if (isPlayingAll) {
+        stopAllAudio();
+        return;
+      }
+      if (!clips.length) {
+        showToast('재생할 녹음 구간이 없습니다.');
+        return;
+      }
+      stopAllAudio();
+      isPlayingAll = true;
+      playAllIndex = 0;
+      $('playAllBtn').textContent = '⏹️ 재생 정지';
+      $('playAllBtn').className = 'py-4 px-4 rounded-2xl bg-slate-700 hover:bg-slate-600 text-white font-extrabold text-sm sm:text-base shadow-lg active:scale-95 transition';
+      playNextInSequence();
+    }
+
+    function playNextInSequence() {
+      if (!isPlayingAll || playAllIndex >= clips.length) {
+        stopAllAudio();
+        return;
+      }
+      playingClipIndex = playAllIndex;
+      renderClips();
+      activeAudio = new Audio(clips[playAllIndex].url);
+      activeAudio.onended = () => {
+        playAllIndex++;
+        playNextInSequence();
+      };
+      activeAudio.play().catch(() => stopAllAudio());
+    }
+
+    $('playAllBtn').addEventListener('click', togglePlayAll);
+
+    function moveClip(index, dir) {
+      const target = index + dir;
+      if (target < 0 || target >= clips.length) return;
+      stopAllAudio();
+      [clips[index], clips[target]] = [clips[target], clips[index]];
+      renderClips();
+    }
+
+    function deleteClip(index) {
+      stopAllAudio();
+      if (clips[index]) {
+        URL.revokeObjectURL(clips[index].url);
+        clips.splice(index, 1);
+      }
+      if (rerecordIndex === index) cancelRerecord();
+      else if (rerecordIndex > index) rerecordIndex--;
+      renderClips();
+    }
+
+    function renderClips() {
+      const list = $('clipList');
+      if (!clips.length) {
+        list.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-slate-400 text-sm font-semibold">아직 녹음된 구간이 없습니다. 위에서 [녹음 시작] 버튼을 눌러 소리를 담아보세요!</div>`;
+        return;
+      }
+      list.innerHTML = clips.map((clip, idx) => {
+        const isCurrent = playingClipIndex === idx;
+        return `
+          <div class="p-3.5 rounded-2xl border ${isCurrent ? 'bg-indigo-50 border-indigo-300' : 'bg-slate-50 border-slate-200'} flex flex-wrap items-center justify-between gap-2.5 transition">
+            <div class="flex items-center gap-2.5">
+              <span class="px-3 py-1 rounded-xl bg-slate-900 text-white text-xs font-extrabold">구간 ${idx + 1}</span>
+              <span class="font-mono text-xs font-bold text-slate-500">${formatTime(clip.duration)}</span>
+              <button type="button" onclick="toggleClipPlay(${idx})" class="px-3.5 py-2 rounded-xl ${isCurrent ? 'bg-amber-500 text-slate-950' : 'bg-indigo-600 text-white'} text-xs font-extrabold active:scale-95">
+                ${isCurrent ? '⏸️ 일시정지' : '▶️ 듣기'}
+              </button>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="startRerecord(${idx})" class="px-3 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-extrabold active:scale-95">🔄 다시 녹음</button>
+              <button type="button" onclick="moveClip(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} class="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-600 text-xs font-bold disabled:opacity-30">▲</button>
+              <button type="button" onclick="moveClip(${idx}, 1)" ${idx === clips.length - 1 ? 'disabled' : ''} class="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-600 text-xs font-bold disabled:opacity-30">▼</button>
+              <button type="button" onclick="deleteClip(${idx})" class="px-2.5 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-extrabold active:scale-95">삭제</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function exportToMp3() {
+      if (!clips.length) {
+        showToast('저장할 녹음 구간이 없습니다.');
+        return;
+      }
+      if (typeof lamejs === 'undefined') {
+        showToast('MP3 변환 라이브러리를 불러오는 중입니다. 잠시 후 다시 눌러주세요.');
+        return;
+      }
+
+      const btn = $('exportMp3Btn');
+      btn.disabled = true;
+      btn.textContent = '⏳ MP3 변환 중...';
+
+      try {
+        ensureAudioContext();
+        const targetRate = 44100;
+        const decodedChannels = [];
+        let totalSamples = 0;
+
+        for (const clip of clips) {
+          const arrayBuf = await clip.blob.arrayBuffer();
+          const decoded = await audioCtx.decodeAudioData(arrayBuf.slice(0));
+          const frameCount = Math.max(1, Math.ceil(decoded.duration * targetRate));
+          const offlineCtx = new OfflineAudioContext(1, frameCount, targetRate);
+          const bufSource = offlineCtx.createBufferSource();
+          bufSource.buffer = decoded;
+          bufSource.connect(offlineCtx.destination);
+          bufSource.start(0);
+          const rendered = await offlineCtx.startRendering();
+          const chData = rendered.getChannelData(0);
+          decodedChannels.push(chData);
+          totalSamples += chData.length;
+        }
+
+        const int16Samples = new Int16Array(totalSamples);
+        let offset = 0;
+        for (const ch of decodedChannels) {
+          for (let i = 0; i < ch.length; i++) {
+            const s = Math.max(-1, Math.min(1, ch[i]));
+            int16Samples[offset++] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+          }
+        }
+
+        const encoder = new lamejs.Mp3Encoder(1, targetRate, 128);
+        const mp3Chunks = [];
+        const blockSize = 1152;
+        for (let i = 0; i < int16Samples.length; i += blockSize) {
+          const chunk = int16Samples.subarray(i, i + blockSize);
+          const mp3Buf = encoder.encodeBuffer(chunk);
+          if (mp3Buf.length > 0) mp3Chunks.push(mp3Buf);
+        }
+        const flushBuf = encoder.flush();
+        if (flushBuf.length > 0) mp3Chunks.push(flushBuf);
+
+        const mp3Blob = new Blob(mp3Chunks, { type: 'audio/mp3' });
+        const grp = $('groupName').value.trim().replace(/[\\/:*?"<>|]/g, '');
+        const song = $('songTitle').value.trim().replace(/[\\/:*?"<>|]/g, '');
+        const fileName = (grp || song) ? `${song || '노래'}_${grp || '모둠'}.mp3` : '부족음악회_녹음.mp3';
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(mp3Blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+
+        showToast(`🎉 '${fileName}' 파일이 저장되었습니다!`);
+      } catch (e) {
+        showToast('MP3 변환 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 MP3 파일로 저장';
+      }
+    }
+
+    $('exportMp3Btn').addEventListener('click', exportToMp3);
+
+    function handlePhotoSelect(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      if (photoUrl) URL.revokeObjectURL(photoUrl);
+      photoUrl = URL.createObjectURL(file);
+      $('photoPreview').src = photoUrl;
+      $('photoPreviewWrap').classList.remove('hidden');
+      showToast('📸 사진이 등록되었습니다!');
+    }
+
+    $('albumInput').addEventListener('change', handlePhotoSelect);
+    $('cameraInput').addEventListener('change', handlePhotoSelect);
+    $('removePhotoBtn').addEventListener('click', () => {
+      if (photoUrl) URL.revokeObjectURL(photoUrl);
+      photoUrl = null;
+      $('photoPreview').src = '';
+      $('photoPreviewWrap').classList.add('hidden');
+      $('albumInput').value = '';
+      $('cameraInput').value = '';
+    });
+
+    function renderQrCode() {
+      const box = $('qrcode');
+      box.innerHTML = '';
+      const rawUrl = $('qrUrlInput').value.trim();
+      const targetUrl = rawUrl || 'https://sites.google.com';
+      const size = isQrLarge ? 300 : 190;
+      new QRCode(box, {
+        text: targetUrl,
+        width: size,
+        height: size,
+        colorDark: '#0f172a',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      $('qrCaption').textContent = rawUrl ? rawUrl : '위 입력창에 구글 사이트 주소를 입력하고 [QR 코드 만들기]를 눌러주세요.';
+    }
+
+    $('openQrBtn').addEventListener('click', () => $('qrModal').classList.remove('hidden'));
+    $('closeQrBtn').addEventListener('click', () => $('qrModal').classList.add('hidden'));
+    $('makeQrBtn').addEventListener('click', () => {
+      if (!$('qrUrlInput').value.trim()) {
+        showToast('안내할 사이트 주소를 입력해 주세요.');
+        return;
+      }
+      renderQrCode();
+      showToast('QR 코드가 생성되었습니다!');
+    });
+
+    $('enlargeQrBtn').addEventListener('click', () => {
+      isQrLarge = !isQrLarge;
+      $('qrCard').className = isQrLarge
+        ? 'bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl transition-all'
+        : 'bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl transition-all';
+      $('enlargeQrBtn').textContent = isQrLarge ? '🔽 기본 크기로 보기' : '🖥️ 전자칠판용 크게 보기';
+      renderQrCode();
+    });
+
+    function resizeCanvas() {
+      const box = $('canvasBox');
+      const canvas = $('visualizer');
+      if (!box || !canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(box.clientWidth * dpr);
+      canvas.height = Math.floor(box.clientHeight * dpr);
+    }
+
+    function drawVisualizer() {
+      requestAnimationFrame(drawVisualizer);
+      const canvas = $('visualizer');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const barCount = 36;
+      const gap = 4;
+      const barWidth = Math.max(2, (w - gap * (barCount + 1)) / barCount);
+
+      if (!analyserNode) {
+        ctx.fillStyle = '#334155';
+        for (let i = 0; i < barCount; i++) {
+          const bh = 6;
+          ctx.fillRect(gap + i * (barWidth + gap), (h - bh) / 2, barWidth, bh);
+        }
+        return;
+      }
+
+      const data = new Uint8Array(analyserNode.frequencyBinCount);
+      analyserNode.getByteFrequencyData(data);
+      ctx.fillStyle = isRecording ? '#fb7185' : '#38bdf8';
+
+      for (let i = 0; i < barCount; i++) {
+        const val = data[i] || 0;
+        const bh = Math.max(6, (val / 255) * (h * 0.85));
+        const x = gap + i * (barWidth + gap);
+        const y = (h - bh) / 2;
+        ctx.beginPath();
+        ctx.roundRect(x, y, barWidth, bh, 4);
+        ctx.fill();
+      }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', () => {
+      initEnvironment();
+      drawVisualizer();
+    });
+  </script>
+</body>
+</html>
