@@ -7,176 +7,261 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
     body { font-family: 'Inter', 'Noto Sans KR', sans-serif; -webkit-tap-highlight-color: transparent; }
     .piano-key { touch-action: none; user-select: none; -webkit-user-select: none; transition: transform 0.06s ease, filter 0.06s ease; }
     .white-key.active { filter: brightness(0.84); transform: translateY(4px); box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.32); }
+    input[type="range"].seek-bar { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
+    input[type="range"].seek-bar::-webkit-slider-runnable-track { height: 10px; border-radius: 999px; background: #1e293b; border: 1px solid #334155; }
+    input[type="range"].seek-bar::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 999px; background: #38bdf8; border: 3px solid #ffffff; margin-top: -7px; box-shadow: 0 2px 6px rgba(0,0,0,0.45); }
+    .timeline-clip { touch-action: none; user-select: none; -webkit-user-select: none; }
+    .playhead-handle { clip-path: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%); }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
-
-  <!-- 알림 메시지 토스트 -->
-  <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 hidden max-w-md w-[92%] bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-semibold text-center"></div>
-
-  <!-- 마이크 권한 설정 모달 -->
-  <div id="micModal" class="fixed inset-0 z-40 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-center">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-3xl">🎤</div>
-      <h2 class="text-2xl font-extrabold text-slate-900 mb-2">마이크 연결하기</h2>
-      <p class="text-sm text-slate-600 mb-5 leading-relaxed">주변 악기 소리와 목소리를 함께 녹음하려면 마이크 권한이 필요합니다. 아래 버튼을 누른 뒤 상단 팝업에서 <strong>[허용]</strong>을 눌러주세요.</p>
-
-      <div id="micErrorBox" class="hidden mb-5 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-left text-xs text-rose-800 leading-relaxed"></div>
-
-      <div class="flex flex-col gap-2.5">
-        <button id="reqMicBtn" type="button" class="w-full py-4 px-5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-base shadow-lg active:scale-95 transition">마이크 권한 허용하기</button>
-        <button id="closeMicModalBtn" type="button" class="w-full py-2.5 text-slate-500 hover:text-slate-700 text-xs font-bold">건반 악기만 먼저 사용하기</button>
-      </div>
-    </div>
-  </div>
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-10">
 
   <!-- 상단 헤더 -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
-    <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">🥁 부족 음악회: 우리가 소리를 만들었어요</h1>
-        <p class="text-xs sm:text-sm text-slate-500 font-medium">교실 도구 소리와 미니 건반 악기를 합쳐 우리 부족의 음악을 녹음해 보세요!</p>
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-xs">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-xs">🥁</div>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">부족 음악회: 우리가 소리를 만들었어요</h1>
+          <p class="text-[11px] sm:text-xs text-slate-500 font-semibold">교실 도구 소리와 미니 악기를 녹음해 우리 모둠만의 음악을 만들어요</p>
+        </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-        <button id="micStatusBtn" type="button" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs sm:text-sm font-bold active:scale-95">
-          <span id="micDot" class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-          <span id="micStatusText">마이크 대기 중</span>
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="openMicModalBtn" type="button" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-extrabold flex items-center gap-1.5 active:scale-95 transition">
+          <span id="micStatusDot" class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+          <span id="micStatusText">마이크 연결하기</span>
         </button>
 
-        <label class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-200 cursor-pointer select-none">
-          <input id="monitorToggle" type="checkbox" class="w-4 h-4 accent-rose-600 rounded" />
-          <div class="leading-tight">
-            <span class="block text-xs sm:text-sm font-bold text-slate-800">실시간 모니터링</span>
-            <span class="block text-[10px] text-slate-500">이어폰 착용 시 사용</span>
-          </div>
+        <label class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer select-none">
+          <input id="monitorToggle" type="checkbox" class="accent-indigo-600 w-4 h-4" />
+          <span>🎧 실시간 듣기</span>
         </label>
 
-        <button id="openQrBtn" type="button" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-xs active:scale-95">학생 안내 QR 코드</button>
+        <button id="openQrBtn" type="button" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold shadow-xs active:scale-95 transition">
+          📱 학생 안내 QR 코드
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- 메인 작업 영역 -->
-  <main id="mainContent" class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start transition-all">
+  <!-- 메인 2단 레이아웃 -->
+  <main class="max-w-6xl mx-auto px-4 pt-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-    <!-- 왼쪽 컬럼: 활동 정보 & 사진 -->
-    <div class="lg:col-span-5 flex flex-col gap-6">
+    <!-- 왼쪽 컬럼: 활동 정보 & 활동 사진 (영역맞춤 캡쳐 대상) -->
+    <div class="lg:col-span-5 flex flex-col gap-3">
+      <div id="captureArea" class="bg-slate-100 rounded-3xl p-1 flex flex-col gap-4">
+        <div class="px-4 py-2.5 rounded-2xl bg-indigo-600 text-white flex items-center justify-between shadow-xs">
+          <span class="text-xs sm:text-sm font-extrabold">🎵 부족 음악회 활동 기록지</span>
+          <span id="captureDateBadge" class="text-[11px] font-mono font-bold bg-white/20 px-2.5 py-0.5 rounded-full">2026.01.01</span>
+        </div>
+
+        <section class="bg-white rounded-3xl p-5 shadow-xs border border-slate-200">
+          <h2 class="text-base sm:text-lg font-extrabold text-slate-900 mb-3.5 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm">1</span>
+            내 활동 정보 적기
+          </h2>
+          <div class="flex flex-col gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">모둠 이름</label>
+              <input id="groupName" type="text" placeholder="예: 번개 부족" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">모둠 노래 제목</label>
+              <input id="songTitle" type="text" placeholder="예: 숲속의 빗소리 행진곡" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">사용한 도구</label>
+              <input id="toolsUsed" type="text" placeholder="예: 페트병 마라카스, 책상 북, 미니 건반" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1.5">모둠원 이름</label>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <input type="text" placeholder="1번 이름" class="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
+                <input type="text" placeholder="2번 이름" class="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
+                <input type="text" placeholder="3번 이름" class="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
+                <input type="text" placeholder="4번 이름" class="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="bg-white rounded-3xl p-5 shadow-xs border border-slate-200">
+          <h2 class="text-base sm:text-lg font-extrabold text-slate-900 mb-3.5 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm">2</span>
+            우리 모둠 도구 &amp; 활동 사진
+          </h2>
+          <input id="albumInput" type="file" accept="image/*" class="hidden" />
+          <input id="cameraInput" type="file" accept="image/*" capture="environment" class="hidden" />
+          <div data-html2canvas-ignore="true" class="grid grid-cols-2 gap-2.5 mb-3">
+            <button type="button" onclick="document.getElementById('albumInput').click()" class="py-3 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm border border-slate-200 active:scale-95 transition">🖼️ 앨범에서 사진 선택</button>
+            <button type="button" onclick="document.getElementById('cameraInput').click()" class="py-3 px-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs sm:text-sm border border-emerald-200 active:scale-95 transition">📷 카메라로 바로 찍기</button>
+          </div>
+          <div id="photoEmptyHint" class="py-6 px-4 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-slate-400 text-xs font-semibold">
+            사진을 선택하거나 촬영하면 이곳에 표시됩니다.
+          </div>
+          <div id="photoPreviewWrap" class="hidden relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
+            <img id="photoPreview" alt="활동 사진" class="w-full max-h-72 object-contain mx-auto" />
+            <button id="removePhotoBtn" data-html2canvas-ignore="true" type="button" class="absolute top-2.5 right-2.5 px-3 py-1.5 rounded-xl bg-slate-900/80 text-white text-xs font-bold hover:bg-rose-600 transition">사진 삭제</button>
+          </div>
+        </section>
+
+        <div class="px-4 py-2.5 rounded-2xl bg-white border border-slate-200 flex items-center justify-between text-xs font-bold text-slate-600">
+          <span>🎵 완성된 소리 조각</span>
+          <span id="captureTrackSummary" class="text-indigo-600">0개 조각 · 총 00:00</span>
+        </div>
+      </div>
+
+      <button id="captureBtn" type="button" class="w-full py-3.5 px-5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm shadow-md flex items-center justify-center gap-2 active:scale-95 transition">
+        <span>📸</span>
+        <span>활동 정보·사진 한 번에 캡쳐하기</span>
+      </button>
+    </div>
+
+    <!-- 오른쪽 컬럼: 녹음 스튜디오 → 미니 건반 → 타임라인 편집 → 조각 목록 -->
+    <div class="lg:col-span-7 flex flex-col gap-5">
+      <!-- 1. 소리 녹음 스튜디오 -->
+      <section class="bg-slate-900 rounded-3xl p-5 sm:p-6 text-white shadow-lg">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span id="recBadge" class="w-3 h-3 rounded-full bg-slate-500"></span>
+            <h2 class="text-base sm:text-lg font-extrabold">소리 녹음 스튜디오</h2>
+            <span id="studioModeBadge" class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[11px] font-bold">대기 중</span>
+          </div>
+          <span id="timerDisplay" class="font-mono text-2xl sm:text-3xl font-extrabold text-rose-400 tracking-wider">00:00</span>
+        </div>
+
+        <div id="canvasBox" class="relative w-full h-24 sm:h-28 bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden mb-4">
+          <canvas id="visualizer" class="w-full h-full block"></canvas>
+          <div id="playVisBadge" class="hidden absolute top-2.5 left-3 px-2.5 py-1 rounded-lg bg-sky-500/20 border border-sky-400/40 text-sky-300 text-[11px] font-extrabold">
+            🔊 소리 듣기 시각화 중
+          </div>
+        </div>
+
+        <div id="rerecordBanner" class="hidden mb-3 px-4 py-2.5 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-between text-xs sm:text-sm">
+          <span id="rerecordLabel" class="font-bold text-amber-300">조각 1 다시 녹음 준비됨</span>
+          <button type="button" onclick="cancelRerecord()" class="text-amber-200 underline font-semibold">취소</button>
+        </div>
+
+        <button id="recordBtn" type="button" class="w-full py-4 px-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition">🎙️ 녹음 시작</button>
+      </section>
+
+      <!-- 2. 미니 건반 악기 (녹음 시작 바로 아래 배치) -->
+      <section class="bg-white rounded-3xl p-4 sm:p-5 shadow-xs border border-slate-200">
+        <div class="flex flex-wrap items-center justify-between gap-2.5 mb-3">
+          <h2 class="text-base sm:text-lg font-extrabold text-slate-900 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-sm">🎹</span>
+            미니 건반 악기
+          </h2>
+          <div class="flex flex-wrap gap-1.5 sm:gap-2">
+            <button type="button" onclick="setInstrument('piano')" id="btn-piano" class="inst-btn px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-purple-600 text-white text-xs sm:text-sm font-bold shadow-xs transition">🎹 피아노</button>
+            <button type="button" onclick="setInstrument('xylophone')" id="btn-xylophone" class="inst-btn px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs sm:text-sm font-bold transition">🔔 실로폰</button>
+            <button type="button" onclick="setInstrument('ukulele')" id="btn-ukulele" class="inst-btn px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs sm:text-sm font-bold transition">🎸 우쿨렐레</button>
+            <button type="button" onclick="setInstrument('violin')" id="btn-violin" class="inst-btn px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs sm:text-sm font-bold transition">🎻 바이올린</button>
+          </div>
+        </div>
+        <div id="keyboardArea" class="relative w-full h-36 sm:h-40 overflow-hidden rounded-2xl border-2 border-slate-300 bg-slate-200 flex gap-1 p-1 select-none touch-none"></div>
+      </section>
+
+      <!-- 3. 멀티트랙 소리 배치 타임라인 & 전체 이어듣기 컨트롤 -->
       <section class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
-        <h2 class="text-base sm:text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
-          <span class="w-7 h-7 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm">1</span>
-          내 활동 정보 적기
-        </h2>
-        <div class="flex flex-col gap-3.5">
+        <div class="flex flex-wrap items-center justify-between gap-2.5 mb-3">
           <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">모둠 이름</label>
-            <input id="groupName" type="text" placeholder="예: 번개 부족" class="w-full px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none" />
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">🎚️ 소리 배치 타임라인 (겹치기 편집)</h2>
+            <p class="text-xs text-slate-500">소리 조각을 누르면 그 위치부터 바로 재생되고, 좌우로 끌면 겹치거나 순서를 바꿀 수 있어요.</p>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">모둠 노래 제목</label>
-            <input id="songTitle" type="text" placeholder="예: 숲속의 빗소리 행진곡" class="w-full px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none" />
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="playAllBtn" type="button" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-extrabold shadow-xs active:scale-95 transition">▶️ 전체 이어듣기</button>
+            <button type="button" onclick="autoAlignSequential()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95">차례대로 정렬</button>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">사용한 도구</label>
-            <input id="toolsUsed" type="text" placeholder="예: 페트병 마라카스, 책상 북, 미니 피아노" class="w-full px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:bg-white focus:border-indigo-500 outline-none" />
+        </div>
+
+        <div class="rounded-2xl bg-slate-950 border border-slate-800 p-3.5 text-white">
+          <div class="mb-3 pb-3 border-b border-slate-800">
+            <div class="flex items-center justify-between text-xs font-bold mb-2">
+              <span id="playbackTargetLabel" class="text-slate-300">전체 타임라인 재생 준비</span>
+              <span id="playbackTimeText" class="font-mono text-sm sm:text-base text-sky-400 font-extrabold">00:00.0 / 00:00.0</span>
+            </div>
+            <input id="seekSlider" type="range" min="0" max="1000" value="0" class="seek-bar w-full mb-3" />
+            <div class="grid grid-cols-5 gap-1.5 sm:gap-2">
+              <button id="skipStartBtn" type="button" class="py-2 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold active:scale-95">⏮️ 처음</button>
+              <button id="rewindBtn" type="button" class="py-2 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold active:scale-95">⏪ -2초</button>
+              <button id="playPauseMixBtn" type="button" class="py-2 px-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-extrabold active:scale-95">▶️ 재생</button>
+              <button id="forwardBtn" type="button" class="py-2 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold active:scale-95">⏩ +2초</button>
+              <button id="stopMixBtn" type="button" class="py-2 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-bold active:scale-95">⏹️ 정지</button>
+            </div>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1.5">모둠원 이름</label>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <input type="text" placeholder="1번 이름" class="w-full px-2.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
-              <input type="text" placeholder="2번 이름" class="w-full px-2.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
-              <input type="text" placeholder="3번 이름" class="w-full px-2.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
-              <input type="text" placeholder="4번 이름" class="w-full px-2.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-center focus:bg-white focus:border-indigo-500 outline-none" />
+
+          <div id="timelineBoard" class="relative w-full overflow-hidden select-none pt-1">
+            <div id="timelineRuler" title="눌러서 재생 위치 이동" class="relative h-6 border-b border-slate-800 mb-2 flex justify-between items-center text-[10px] font-mono text-slate-400 px-1 cursor-pointer">
+              <span>0.0초</span>
+              <span>3.0초</span>
+              <span>6.0초</span>
+              <span>9.0초</span>
+              <span>12.0초</span>
+            </div>
+            <div id="timelineTracks" class="relative min-h-[88px] flex flex-col gap-2">
+              <div class="py-6 text-center text-xs text-slate-500 font-semibold">
+                소리를 녹음하거나 외부 음원을 불러오면 이곳에서 위치를 배치할 수 있습니다.
+              </div>
+            </div>
+            <div id="timelinePlayhead" class="pointer-events-none absolute top-0 bottom-0 -translate-x-1/2 flex flex-col items-center z-10" style="left: 0%;">
+              <div class="playhead-handle w-3.5 h-3.5 bg-sky-400 shadow-sm"></div>
+              <div class="w-0.5 flex-1 bg-sky-400 shadow-[0_0_8px_#38bdf8]"></div>
             </div>
           </div>
         </div>
       </section>
 
+      <!-- 4. 소리 구간 목록 & 외부 음원 불러오기 / MP3 저장 -->
       <section class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
-        <h2 class="text-base sm:text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
-          <span class="w-7 h-7 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm">2</span>
-          우리 모둠 도구 &amp; 활동 사진
-        </h2>
-        <input id="albumInput" type="file" accept="image/*" class="hidden" />
-        <input id="cameraInput" type="file" accept="image/*" capture="environment" class="hidden" />
-        <div class="grid grid-cols-2 gap-2.5 mb-3">
-          <button type="button" onclick="document.getElementById('albumInput').click()" class="py-3.5 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm border border-slate-200 active:scale-95 transition">🖼️ 앨범에서 사진 선택</button>
-          <button type="button" onclick="document.getElementById('cameraInput').click()" class="py-3.5 px-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs sm:text-sm border border-emerald-200 active:scale-95 transition">📷 카메라로 바로 찍기</button>
-        </div>
-        <div id="photoPreviewWrap" class="hidden relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
-          <img id="photoPreview" alt="활동 사진" class="w-full max-h-72 object-contain mx-auto" />
-          <button id="removePhotoBtn" type="button" class="absolute top-2.5 right-2.5 px-3 py-1.5 rounded-xl bg-slate-900/80 text-white text-xs font-bold hover:bg-rose-600 transition">사진 삭제</button>
-        </div>
-      </section>
-    </div>
-
-    <!-- 오른쪽 컬럼: 녹음 스튜디오 & 구간 목록 -->
-    <div class="lg:col-span-7 flex flex-col gap-6">
-      <section class="bg-slate-900 rounded-3xl p-5 sm:p-6 text-white shadow-lg">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2">
-            <span id="recBadge" class="w-3 h-3 rounded-full bg-slate-500"></span>
-            <h2 class="text-base sm:text-lg font-extrabold">소리 녹음 스튜디오</h2>
-          </div>
-          <span id="timerDisplay" class="font-mono text-2xl sm:text-3xl font-extrabold text-rose-400 tracking-wider">00:00</span>
-        </div>
-
-        <div id="canvasBox" class="w-full h-28 bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden mb-4">
-          <canvas id="visualizer" class="w-full h-full block"></canvas>
-        </div>
-
-        <div id="rerecordBanner" class="hidden mb-3 px-4 py-2.5 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-between text-xs sm:text-sm">
-          <span id="rerecordLabel" class="font-bold text-amber-300">구간 1 다시 녹음 준비됨</span>
-          <button type="button" onclick="cancelRerecord()" class="text-amber-200 underline font-semibold">취소</button>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <button id="recordBtn" type="button" class="sm:col-span-2 py-4 px-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition">🎙️ 녹음 시작</button>
-          <button id="playAllBtn" type="button" class="py-4 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm sm:text-base shadow-lg active:scale-95 transition">▶️ 전체 이어듣기</button>
-        </div>
-      </section>
-
-      <section class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-2.5 mb-4">
           <div>
-            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">녹음된 소리 구간 목록</h2>
-            <p class="text-xs text-slate-500">녹음 중에도 구간별로 바로 들어보고 마음에 안 들면 다시 녹음하세요.</p>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">소리 조각 목록 &amp; 미세 조정</h2>
+            <p class="text-xs text-slate-500">외부 MP3·WAV 음원을 불러오거나 각 조각의 시작 시간과 다시 녹음을 조절하세요.</p>
           </div>
-          <button id="exportMp3Btn" type="button" class="px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-sm active:scale-95 transition">💾 MP3 파일로 저장</button>
+          <div class="flex flex-wrap items-center gap-2">
+            <input id="audioUploadInput" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav,audio/*" multiple class="hidden" />
+            <button type="button" onclick="document.getElementById('audioUploadInput').click()" class="px-3.5 py-2.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-extrabold text-xs sm:text-sm active:scale-95 transition">📂 MP3/WAV 불러오기</button>
+            <button id="exportMp3Btn" type="button" class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-sm active:scale-95 transition">💾 MP3 파일로 저장</button>
+          </div>
         </div>
 
         <div id="clipList" class="flex flex-col gap-3">
           <div class="py-10 px-4 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-slate-400 text-sm font-semibold">
-            아직 녹음된 구간이 없습니다. 위에서 [녹음 시작] 버튼을 눌러 소리를 담아보세요!
+            아직 등록된 소리가 없습니다. [녹음 시작] 또는 [MP3/WAV 불러오기]를 눌러보세요!
           </div>
         </div>
-      </section>
-    </div>
-
-    <!-- 하단 미니 건반 악기 (검은 건반 제거 + 무지개 계이름 색상) -->
-    <div class="lg:col-span-12">
-      <section class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <h2 class="text-base sm:text-lg font-extrabold text-slate-900 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-sm">🎹</span>
-            미니 건반 악기
-          </h2>
-          <div class="flex flex-wrap gap-2">
-            <button type="button" onclick="setInstrument('piano')" id="btn-piano" class="inst-btn px-3.5 py-2 rounded-xl bg-purple-600 text-white text-xs sm:text-sm font-bold shadow-xs transition">🎹 피아노</button>
-            <button type="button" onclick="setInstrument('xylophone')" id="btn-xylophone" class="inst-btn px-3.5 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs sm:text-sm font-bold transition">🔔 실로폰</button>
-            <button type="button" onclick="setInstrument('ukulele')" id="btn-ukulele" class="inst-btn px-3.5 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs sm:text-sm font-bold transition">🎸 우쿨렐레</button>
-            <button type="button" onclick="setInstrument('violin')" id="btn-violin" class="inst-btn px-3.5 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs sm:text-sm font-bold transition">🎻 바이올린</button>
-          </div>
-        </div>
-        <div id="keyboardArea" class="relative w-full h-36 sm:h-44 overflow-hidden rounded-2xl border-2 border-slate-300 bg-slate-200 flex gap-1 p-1 select-none touch-none"></div>
       </section>
     </div>
   </main>
+
+  <!-- 마이크 권한 안내 모달 (갤럭시 패드 크롬 최적화) -->
+  <div id="micModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-extrabold text-slate-900">🎤 마이크 권한 연결하기</h3>
+        <button id="closeMicModalBtn" type="button" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 font-bold text-lg hover:bg-slate-200">✕</button>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">
+        교실의 악기와 도구 소리를 녹음하려면 태블릿 마이크 허용이 필요합니다. 아래 버튼을 누른 뒤 화면 위쪽 팝업에서 <strong>[허용]</strong>을 눌러주세요.
+      </p>
+      <div id="micBlockedGuide" class="hidden mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
+        <p class="font-extrabold mb-1">⚠️ 마이크 권한이 차단되어 있을 때 해결 방법:</p>
+        <p>1. 크롬 주소창 왼쪽의 <strong>자물쇠(또는 설정) 아이콘</strong> 터치</p>
+        <p>2. <strong>[권한] → [마이크]</strong>를 <strong>[허용]</strong>으로 변경 후 새로고침</p>
+      </div>
+      <button id="requestMicBtn" type="button" class="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-sm shadow-md active:scale-95 transition">
+        마이크 권한 허용하기
+      </button>
+    </div>
+  </div>
 
   <!-- 학생 안내 QR 코드 모달 -->
   <div id="qrModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
@@ -198,8 +283,32 @@
     </div>
   </div>
 
+  <!-- 하단 안내 토스트 메시지 -->
+  <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-slate-900/95 text-white text-xs sm:text-sm font-bold shadow-xl pointer-events-none text-center max-w-[90vw]"></div>
+
   <script>
     const $ = (id) => document.getElementById(id);
+
+    const NOTES = [
+      { name: '시', sub: '낮은 시', freq: 246.94, bg: '#8b5cf6', border: '#6d28d9' },
+      { name: '도', sub: '', freq: 261.63, bg: '#ef4444', border: '#b91c1c' },
+      { name: '레', sub: '', freq: 293.66, bg: '#f97316', border: '#c2410c' },
+      { name: '미', sub: '', freq: 329.63, bg: '#eab308', border: '#a16207' },
+      { name: '파', sub: '', freq: 349.23, bg: '#22c55e', border: '#15803d' },
+      { name: '솔', sub: '', freq: 392.00, bg: '#0ea5e9', border: '#0369a1' },
+      { name: '라', sub: '', freq: 440.00, bg: '#3b82f6', border: '#1d4ed8' },
+      { name: '시', sub: '', freq: 493.88, bg: '#8b5cf6', border: '#6d28d9' },
+      { name: '도', sub: '높은 도', freq: 523.25, bg: '#ef4444', border: '#b91c1c' },
+      { name: '레', sub: '높은 레', freq: 587.33, bg: '#f97316', border: '#c2410c' }
+    ];
+
+    const TRACK_COLORS = [
+      { bar: 'bg-rose-500 border-rose-300', badge: 'bg-rose-600' },
+      { bar: 'bg-sky-500 border-sky-300', badge: 'bg-sky-600' },
+      { bar: 'bg-emerald-500 border-emerald-300', badge: 'bg-emerald-600' },
+      { bar: 'bg-amber-500 border-amber-300', badge: 'bg-amber-600' },
+      { bar: 'bg-purple-500 border-purple-300', badge: 'bg-purple-600' }
+    ];
 
     let audioCtx = null;
     let micStream = null;
@@ -210,6 +319,9 @@
     let mixDestination = null;
     let noiseBuffer = null;
 
+    let currentInstrument = 'piano';
+    const activeVoices = new Map();
+
     let mediaRecorder = null;
     let recordedChunks = [];
     let isRecording = false;
@@ -218,506 +330,398 @@
     let rerecordIndex = null;
 
     let clips = [];
-    let currentPlayingAudio = null;
-    let currentPlayingIndex = -1;
-    let isPlayingAll = false;
-
-    let currentInstrument = 'piano';
-    const activeOscillators = {};
-    const activePointers = new Map();
-
-    // 낮은 시(B3) ~ 높은 레(D5) 10개 온음 건반 & 계이름 무지개 색상
-    const KEYS = [
-      { id: 'B3', label: '시', sub: '낮은', freq: 246.94, bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-700' },
-      { id: 'C4', label: '도', sub: '', freq: 261.63, bg: 'bg-red-500', text: 'text-white', border: 'border-red-700' },
-      { id: 'D4', label: '레', sub: '', freq: 293.66, bg: 'bg-orange-500', text: 'text-white', border: 'border-orange-700' },
-      { id: 'E4', label: '미', sub: '', freq: 329.63, bg: 'bg-yellow-400', text: 'text-slate-900', border: 'border-yellow-600' },
-      { id: 'F4', label: '파', sub: '', freq: 349.23, bg: 'bg-green-500', text: 'text-white', border: 'border-green-700' },
-      { id: 'G4', label: '솔', sub: '', freq: 392.00, bg: 'bg-sky-400', text: 'text-slate-900', border: 'border-sky-600' },
-      { id: 'A4', label: '라', sub: '', freq: 440.00, bg: 'bg-blue-600', text: 'text-white', border: 'border-blue-800' },
-      { id: 'B4', label: '시', sub: '', freq: 493.88, bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-700' },
-      { id: 'C5', label: '도', sub: '높은', freq: 523.25, bg: 'bg-red-500', text: 'text-white', border: 'border-red-700' },
-      { id: 'D5', label: '레', sub: '높은', freq: 587.33, bg: 'bg-orange-500', text: 'text-white', border: 'border-orange-700' }
-    ];
+    let isMixPlaying = false;
+    let playStartCtxTime = 0;
+    let playStartOffset = 0;
+    let soloClipIndex = null;
+    let selectedClipIndex = null;
+    let activePlaySources = [];
+    let toastTimer = null;
 
     function showToast(msg) {
-      const toast = $('toast');
-      toast.textContent = msg;
-      toast.classList.remove('hidden');
-      clearTimeout(toast._timer);
-      toast._timer = setTimeout(() => toast.classList.add('hidden'), 3200);
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.add('hidden'), 3200);
     }
 
     function formatTime(sec) {
-      const m = String(Math.floor(sec / 60)).padStart(2, '0');
-      const s = String(Math.floor(sec % 60)).padStart(2, '0');
+      const s = Math.max(0, Math.floor(sec));
+      const m = String(Math.floor(s / 60)).padStart(2, '0');
+      const r = String(s % 60).padStart(2, '0');
+      return `${m}:${r}`;
+    }
+
+    function formatTimeTenths(sec) {
+      const clamped = Math.max(0, sec);
+      const m = String(Math.floor(clamped / 60)).padStart(2, '0');
+      const s = (clamped % 60).toFixed(1).padStart(4, '0');
       return `${m}:${s}`;
+    }
+
+    function createNoiseBuffer(ctx) {
+      const len = ctx.sampleRate * 1.5;
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      return buf;
     }
 
     function initAudioGraph() {
       if (!audioCtx) {
         audioCtx = new AudioContext();
+        noiseBuffer = createNoiseBuffer(audioCtx);
         synthBus = audioCtx.createGain();
-        synthBus.gain.value = 0.9;
-
-        const bufLen = audioCtx.sampleRate * 0.5;
-        noiseBuffer = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
-        const out = noiseBuffer.getChannelData(0);
-        for (let i = 0; i < bufLen; i++) {
-          out[i] = Math.random() * 2 - 1;
-        }
+        synthBus.gain.value = 0.85;
 
         analyserNode = audioCtx.createAnalyser();
-        analyserNode.fftSize = 256;
+        analyserNode.fftSize = 128;
 
         mixDestination = audioCtx.createMediaStreamDestination();
-
         monitorGain = audioCtx.createGain();
-        monitorGain.gain.value = $('monitorToggle').checked ? 1 : 0;
-        monitorGain.connect(audioCtx.destination);
+        monitorGain.gain.value = $('monitorToggle').checked ? 0.85 : 0;
 
-        synthBus.connect(audioCtx.destination);
         synthBus.connect(analyserNode);
         synthBus.connect(mixDestination);
+        synthBus.connect(audioCtx.destination);
+        monitorGain.connect(audioCtx.destination);
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
     }
 
-    function updateMicUI(connected) {
-      const btn = $('micStatusBtn');
-      const dot = $('micDot');
-      const txt = $('micStatusText');
-      if (connected) {
-        btn.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-bold active:scale-95';
-        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
-        txt.textContent = '마이크 연결됨';
-      } else {
-        btn.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs sm:text-sm font-bold active:scale-95';
-        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
-        txt.textContent = '마이크 대기 중';
-      }
-    }
-
-    async function connectMicrophone() {
+    // 4가지 악기 음향 합성 (피아노, 쇠 실로폰/철금, 우쿨렐레, 바이올린)
+    function triggerNote(pointerId, note, keyEl) {
       initAudioGraph();
-      const reqBtn = $('reqMicBtn');
-      const errBox = $('micErrorBox');
-      reqBtn.disabled = true;
-      reqBtn.textContent = "권한 요청 중... 상단 팝업에서 '허용'을 눌러주세요";
-      errBox.classList.add('hidden');
+      if (activeVoices.has(pointerId)) releaseNote(pointerId);
+      keyEl.classList.add('active');
 
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      const now = audioCtx.currentTime;
+      const freq = note.freq;
+      const masterGain = audioCtx.createGain();
+      masterGain.connect(synthBus);
+
+      const stopList = [];
+      let sustain = true;
+
+      if (currentInstrument === 'piano') {
+        // 피아노: 3현 유니즌 디튠 + 해머 어택 노이즈 + 다이내믹 로우패스 필터
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(freq * 7.5, now);
+        filter.frequency.exponentialRampToValueAtTime(freq * 2.1, now + 0.55);
+        filter.connect(masterGain);
+
+        [-4, 0, 4].forEach((cents) => {
+          const osc = audioCtx.createOscillator();
+          osc.type = cents === 0 ? 'triangle' : 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now);
+          osc.detune.setValueAtTime(cents, now);
+          const g = audioCtx.createGain();
+          g.gain.value = cents === 0 ? 0.34 : 0.14;
+          osc.connect(g);
+          g.connect(filter);
+          osc.start(now);
+          stopList.push(osc);
         });
-        micStream = stream;
-        if (!micSource) {
-          micSource = audioCtx.createMediaStreamSource(stream);
-          micSource.connect(analyserNode);
-          micSource.connect(mixDestination);
-          micSource.connect(monitorGain);
-        }
-        updateMicUI(true);
-        $('micModal').classList.add('hidden');
-        showToast('마이크가 연결되었습니다! 주변 소리와 건반을 함께 녹음할 수 있습니다.');
-      } catch (err) {
-        updateMicUI(false);
-        errBox.classList.remove('hidden');
-        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-          errBox.innerHTML = '<strong>마이크 권한이 차단되어 있습니다.</strong><br/>브라우저 주소창 왼쪽의 <strong>자물쇠 아이콘</strong> → <strong>[권한]</strong> → <strong>[마이크 허용]</strong>으로 바꾼 뒤 다시 시도해 주세요.';
-        } else {
-          errBox.innerHTML = `<strong>마이크를 연결할 수 없습니다.</strong> (${err.name})<br/>사이트 주소가 <code>https://</code>로 시작하는지 확인해 주세요.`;
-        }
-      } finally {
-        reqBtn.disabled = false;
-        reqBtn.textContent = '마이크 권한 허용하기';
+
+        const hammer = audioCtx.createBufferSource();
+        hammer.buffer = noiseBuffer;
+        const hFilter = audioCtx.createBiquadFilter();
+        hFilter.type = 'bandpass';
+        hFilter.frequency.value = freq * 2.5;
+        const hGain = audioCtx.createGain();
+        hGain.gain.setValueAtTime(0.22, now);
+        hGain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+        hammer.connect(hFilter);
+        hFilter.connect(hGain);
+        hGain.connect(masterGain);
+        hammer.start(now);
+        hammer.stop(now + 0.05);
+
+        masterGain.gain.setValueAtTime(0.001, now);
+        masterGain.gain.linearRampToValueAtTime(0.75, now + 0.012);
+        masterGain.gain.exponentialRampToValueAtTime(0.28, now + 0.45);
+      } else if (currentInstrument === 'xylophone') {
+        // 쇠 실로폰(글로켄슈필/철금): 1옥타브 위 밝은 음역 + 쇠 채 타격 FM + 비정수 배음(2.756, 5.404)
+        sustain = false;
+        const metalFreq = freq * 2;
+
+        const carrier = audioCtx.createOscillator();
+        carrier.type = 'sine';
+        carrier.frequency.setValueAtTime(metalFreq * 1.015, now);
+        carrier.frequency.exponentialRampToValueAtTime(metalFreq, now + 0.025);
+
+        const mod = audioCtx.createOscillator();
+        mod.type = 'sine';
+        mod.frequency.setValueAtTime(metalFreq * 3.5, now);
+        const modGain = audioCtx.createGain();
+        modGain.gain.setValueAtTime(metalFreq * 1.6, now);
+        modGain.gain.exponentialRampToValueAtTime(1, now + 0.035);
+        mod.connect(modGain);
+        modGain.connect(carrier.frequency);
+
+        const over1 = audioCtx.createOscillator();
+        over1.type = 'sine';
+        over1.frequency.setValueAtTime(metalFreq * 2.756, now);
+        const over1Gain = audioCtx.createGain();
+        over1Gain.gain.setValueAtTime(0.22, now);
+        over1Gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.42);
+
+        const over2 = audioCtx.createOscillator();
+        over2.type = 'sine';
+        over2.frequency.setValueAtTime(metalFreq * 5.404, now);
+        const over2Gain = audioCtx.createGain();
+        over2Gain.gain.setValueAtTime(0.11, now);
+        over2Gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.16);
+
+        carrier.connect(masterGain);
+        over1.connect(over1Gain);
+        over1Gain.connect(masterGain);
+        over2.connect(over2Gain);
+        over2Gain.connect(masterGain);
+
+        masterGain.gain.setValueAtTime(0.001, now);
+        masterGain.gain.linearRampToValueAtTime(0.85, now + 0.004);
+        masterGain.gain.exponentialRampToValueAtTime(0.001, now + 1.15);
+
+        [carrier, mod, over1, over2].forEach((o) => {
+          o.start(now);
+          o.stop(now + 1.2);
+        });
+      } else if (currentInstrument === 'ukulele') {
+        // 우쿨렐레: 나일론 줄 튕김 + 작은 나무 울림통 포먼트(310Hz, 620Hz)
+        sustain = false;
+        const body1 = audioCtx.createBiquadFilter();
+        body1.type = 'peaking';
+        body1.frequency.value = 310;
+        body1.gain.value = 7;
+
+        const body2 = audioCtx.createBiquadFilter();
+        body2.type = 'peaking';
+        body2.frequency.value = 620;
+        body2.gain.value = 5;
+
+        const lp = audioCtx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.setValueAtTime(freq * 6, now);
+        lp.frequency.exponentialRampToValueAtTime(freq * 1.6, now + 0.28);
+
+        body1.connect(body2);
+        body2.connect(lp);
+        lp.connect(masterGain);
+
+        const osc1 = audioCtx.createOscillator();
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(freq, now);
+
+        const osc2 = audioCtx.createOscillator();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(freq * 2, now);
+        const g2 = audioCtx.createGain();
+        g2.gain.setValueAtTime(0.25, now);
+        g2.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+
+        osc1.connect(body1);
+        osc2.connect(g2);
+        g2.connect(body1);
+
+        masterGain.gain.setValueAtTime(0.001, now);
+        masterGain.gain.linearRampToValueAtTime(0.8, now + 0.008);
+        masterGain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+
+        [osc1, osc2].forEach((o) => {
+          o.start(now);
+          o.stop(now + 0.78);
+        });
+      } else {
+        // 바이올린: 활 긋는 느린 어택 + 지연 비브라토 + 악기 몸통 공명(290Hz, 490Hz)
+        const f1 = audioCtx.createBiquadFilter();
+        f1.type = 'peaking';
+        f1.frequency.value = 290;
+        f1.gain.value = 6;
+
+        const f2 = audioCtx.createBiquadFilter();
+        f2.type = 'peaking';
+        f2.frequency.value = 490;
+        f2.gain.value = 5;
+
+        const lp = audioCtx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = freq * 4.2;
+
+        f1.connect(f2);
+        f2.connect(lp);
+        lp.connect(masterGain);
+
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, now);
+
+        const vibrato = audioCtx.createOscillator();
+        vibrato.type = 'sine';
+        vibrato.frequency.value = 5.6;
+        const vibGain = audioCtx.createGain();
+        vibGain.gain.setValueAtTime(0, now);
+        vibGain.gain.linearRampToValueAtTime(6.5, now + 0.35);
+        vibrato.connect(vibGain);
+        vibGain.connect(osc.frequency);
+
+        osc.connect(f1);
+        masterGain.gain.setValueAtTime(0.001, now);
+        masterGain.gain.linearRampToValueAtTime(0.55, now + 0.16);
+
+        osc.start(now);
+        vibrato.start(now);
+        stopList.push(osc, vibrato);
+      }
+
+      activeVoices.set(pointerId, { keyEl, masterGain, stopList, sustain });
+    }
+
+    function releaseNote(pointerId) {
+      const voice = activeVoices.get(pointerId);
+      if (!voice) return;
+      voice.keyEl.classList.remove('active');
+      if (voice.sustain && audioCtx) {
+        const now = audioCtx.currentTime;
+        voice.masterGain.gain.cancelScheduledValues(now);
+        voice.masterGain.gain.setValueAtTime(Math.max(0.001, voice.masterGain.gain.value), now);
+        voice.masterGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.22);
+        voice.stopList.forEach((o) => {
+          try { o.stop(now + 0.24); } catch (e) {}
+        });
+      }
+      activeVoices.delete(pointerId);
+    }
+
+    function setInstrument(inst) {
+      currentInstrument = inst;
+      document.querySelectorAll('.inst-btn').forEach((btn) => {
+        btn.className = 'inst-btn px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs sm:text-sm font-bold transition';
+      });
+      const activeBtn = $(`btn-${inst}`);
+      if (activeBtn) {
+        activeBtn.className = 'inst-btn px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-purple-600 text-white text-xs sm:text-sm font-bold shadow-xs transition';
       }
     }
 
-    $('reqMicBtn').addEventListener('click', connectMicrophone);
-    $('closeMicModalBtn').addEventListener('click', () => {
+    function buildKeyboard() {
+      const area = $('keyboardArea');
+      area.innerHTML = NOTES.map((n, idx) => `
+        <button type="button" data-note-idx="${idx}"
+          style="background-color: ${n.bg}; border-color: ${n.border};"
+          class="piano-key white-key flex-1 h-full rounded-xl border-b-4 text-white flex flex-col items-center justify-end pb-2.5 shadow-sm">
+          ${n.sub ? `<span class="text-[9px] sm:text-[10px] font-bold opacity-90 leading-none mb-0.5">${n.sub}</span>` : ''}
+          <span class="text-sm sm:text-base font-extrabold drop-shadow-xs">${n.name}</span>
+        </button>
+      `).join('');
+
+      const pointerNoteMap = new Map();
+
+      const getKeyFromPoint = (x, y) => {
+        const el = document.elementFromPoint(x, y);
+        return el ? el.closest('.piano-key') : null;
+      };
+
+      area.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        const key = e.target.closest('.piano-key');
+        if (!key) return;
+        area.setPointerCapture(e.pointerId);
+        const idx = Number(key.dataset.noteIdx);
+        pointerNoteMap.set(e.pointerId, idx);
+        triggerNote(e.pointerId, NOTES[idx], key);
+      });
+
+      area.addEventListener('pointermove', (e) => {
+        if (!pointerNoteMap.has(e.pointerId)) return;
+        const key = getKeyFromPoint(e.clientX, e.clientY);
+        if (!key) return;
+        const idx = Number(key.dataset.noteIdx);
+        if (pointerNoteMap.get(e.pointerId) !== idx) {
+          pointerNoteMap.set(e.pointerId, idx);
+          triggerNote(e.pointerId, NOTES[idx], key);
+        }
+      });
+
+      const endPointer = (e) => {
+        if (!pointerNoteMap.has(e.pointerId)) return;
+        pointerNoteMap.delete(e.pointerId);
+        releaseNote(e.pointerId);
+      };
+
+      area.addEventListener('pointerup', endPointer);
+      area.addEventListener('pointercancel', endPointer);
+    }
+
+    // 마이크 연결 및 권한 모달
+    async function connectMicrophone(fromModal = false) {
       initAudioGraph();
-      $('micModal').classList.add('hidden');
-      showToast('건반 악기 모드로 시작합니다. 언제든 상단 [마이크 대기 중]을 눌러 마이크를 켤 수 있어요.');
-    });
-    $('micStatusBtn').addEventListener('click', () => {
-      if (!micStream) $('micModal').classList.remove('hidden');
-      else showToast('마이크가 정상적으로 연결되어 있습니다.');
-    });
+      if (micStream) {
+        if (fromModal) $('micModal').classList.add('hidden');
+        return true;
+      }
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        micSource = audioCtx.createMediaStreamSource(micStream);
+        micSource.connect(analyserNode);
+        micSource.connect(mixDestination);
+        micSource.connect(monitorGain);
+
+        $('micStatusDot').className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+        $('micStatusText').textContent = '마이크 연결됨';
+        $('openMicModalBtn').className = 'px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold flex items-center gap-1.5';
+        $('micModal').classList.add('hidden');
+        showToast('마이크가 연결되었습니다!');
+        return true;
+      } catch (err) {
+        $('micBlockedGuide').classList.remove('hidden');
+        if (!fromModal) $('micModal').classList.remove('hidden');
+        showToast('마이크 권한을 허용해 주세요.');
+        return false;
+      }
+    }
+
+    $('openMicModalBtn').addEventListener('click', () => $('micModal').classList.remove('hidden'));
+    $('closeMicModalBtn').addEventListener('click', () => $('micModal').classList.add('hidden'));
+    $('requestMicBtn').addEventListener('click', () => connectMicrophone(true));
 
     $('monitorToggle').addEventListener('change', (e) => {
       initAudioGraph();
       if (monitorGain) {
-        monitorGain.gain.setTargetAtTime(e.target.checked ? 1 : 0, audioCtx.currentTime, 0.02);
+        monitorGain.gain.value = e.target.checked ? 0.85 : 0;
       }
-      if (e.target.checked && !micStream) {
-        showToast('마이크가 연결되면 실시간 모니터링 소리가 들립니다.');
+      if (e.target.checked) {
+        showToast('이어폰을 끼고 실시간 모니터링을 사용하세요!');
       }
     });
 
-    // 악기 선택 및 4가지 고유 음색 합성
-    function setInstrument(inst) {
-      currentInstrument = inst;
-      document.querySelectorAll('.inst-btn').forEach((btn) => {
-        btn.className = 'inst-btn px-3.5 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs sm:text-sm font-bold transition';
-      });
-      const activeBtn = $(`btn-${inst}`);
-      if (activeBtn) {
-        activeBtn.className = 'inst-btn px-3.5 py-2 rounded-xl bg-purple-600 text-white text-xs sm:text-sm font-bold shadow-xs transition';
+    // 녹음 시작 및 중지
+    $('recordBtn').addEventListener('click', async () => {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        await startRecording();
       }
-    }
-
-    function playNote(noteId, freq) {
-      initAudioGraph();
-      if (activeOscillators[noteId]) stopNote(noteId);
-
-      const now = audioCtx.currentTime;
-      const noteGain = audioCtx.createGain();
-      noteGain.connect(synthBus);
-      const nodes = [];
-      let releaseTime = 0.25;
-
-      const triggerNoise = (filterType, filterFreq, qVal, peakGain, duration, attack = 0.002) => {
-        if (!noiseBuffer) return;
-        const src = audioCtx.createBufferSource();
-        src.buffer = noiseBuffer;
-        const flt = audioCtx.createBiquadFilter();
-        flt.type = filterType;
-        flt.frequency.setValueAtTime(filterFreq, now);
-        flt.Q.setValueAtTime(qVal, now);
-
-        const g = audioCtx.createGain();
-        g.gain.setValueAtTime(0.0001, now);
-        g.gain.linearRampToValueAtTime(peakGain, now + attack);
-        g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
-        src.connect(flt);
-        flt.connect(g);
-        g.connect(noteGain);
-        src.start(now);
-        src.stop(now + duration + 0.02);
-      };
-
-      if (currentInstrument === 'piano') {
-        releaseTime = 0.38;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(Math.min(8000, freq * 9), now);
-        filter.frequency.exponentialRampToValueAtTime(freq * 1.6, now + 1.4);
-        filter.Q.setValueAtTime(1.2, now);
-        filter.connect(noteGain);
-
-        [-4, 0, 4].forEach((cents, idx) => {
-          const osc = audioCtx.createOscillator();
-          osc.type = idx === 1 ? 'sawtooth' : 'triangle';
-          osc.frequency.setValueAtTime(freq, now);
-          osc.detune.setValueAtTime(cents, now);
-          const g = audioCtx.createGain();
-          g.gain.setValueAtTime(idx === 1 ? 0.22 : 0.34, now);
-          osc.connect(g);
-          g.connect(filter);
-          osc.start(now);
-          nodes.push(osc);
-        });
-
-        const overtone = audioCtx.createOscillator();
-        overtone.type = 'sine';
-        overtone.frequency.setValueAtTime(freq * 2.002, now);
-        const overGain = audioCtx.createGain();
-        overGain.gain.setValueAtTime(0.24, now);
-        overGain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
-        overtone.connect(overGain);
-        overGain.connect(filter);
-        overtone.start(now);
-        nodes.push(overtone);
-
-        triggerNoise('lowpass', 750, 1.0, 0.28, 0.035);
-
-        noteGain.gain.setValueAtTime(0.0001, now);
-        noteGain.gain.linearRampToValueAtTime(0.75, now + 0.008);
-        noteGain.gain.exponentialRampToValueAtTime(0.28, now + 0.35);
-        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
-
-      } else if (currentInstrument === 'xylophone') {
-        releaseTime = 1.6;
-        const baseFreq = freq * 2;
-
-        const fund1 = audioCtx.createOscillator();
-        const fund2 = audioCtx.createOscillator();
-        fund1.type = 'sine';
-        fund2.type = 'sine';
-        fund1.frequency.setValueAtTime(baseFreq, now);
-        fund2.frequency.setValueAtTime(baseFreq * 1.0018, now);
-
-        const fmMod = audioCtx.createOscillator();
-        const fmGain = audioCtx.createGain();
-        fmMod.type = 'sine';
-        fmMod.frequency.setValueAtTime(baseFreq * 2.756, now);
-        fmGain.gain.setValueAtTime(baseFreq * 1.4, now);
-        fmGain.gain.exponentialRampToValueAtTime(0.01, now + 0.045);
-        fmMod.connect(fmGain);
-        fmGain.connect(fund1.frequency);
-
-        const metalOver1 = audioCtx.createOscillator();
-        metalOver1.type = 'sine';
-        metalOver1.frequency.setValueAtTime(baseFreq * 2.756, now);
-        const metalGain1 = audioCtx.createGain();
-        metalGain1.gain.setValueAtTime(0.32, now);
-        metalGain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
-
-        const metalOver2 = audioCtx.createOscillator();
-        metalOver2.type = 'sine';
-        metalOver2.frequency.setValueAtTime(baseFreq * 5.404, now);
-        const metalGain2 = audioCtx.createGain();
-        metalGain2.gain.setValueAtTime(0.22, now);
-        metalGain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
-
-        triggerNoise('bandpass', 5800, 4.0, 0.38, 0.012, 0.001);
-
-        noteGain.gain.setValueAtTime(0.0001, now);
-        noteGain.gain.linearRampToValueAtTime(0.62, now + 0.002);
-        noteGain.gain.exponentialRampToValueAtTime(0.22, now + 0.35);
-        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
-
-        const fundMix = audioCtx.createGain();
-        fundMix.gain.setValueAtTime(0.5, now);
-
-        fund1.connect(fundMix);
-        fund2.connect(fundMix);
-        fundMix.connect(noteGain);
-
-        metalOver1.connect(metalGain1);
-        metalGain1.connect(noteGain);
-        metalOver2.connect(metalGain2);
-        metalGain2.connect(noteGain);
-
-        fund1.start(now);
-        fund2.start(now);
-        fmMod.start(now);
-        metalOver1.start(now);
-        metalOver2.start(now);
-        nodes.push(fund1, fund2, fmMod, metalOver1, metalOver2);
-
-      } else if (currentInstrument === 'ukulele') {
-        releaseTime = 0.65;
-        const stringFilter = audioCtx.createBiquadFilter();
-        stringFilter.type = 'lowpass';
-        stringFilter.frequency.setValueAtTime(freq * 4.8, now);
-        stringFilter.frequency.exponentialRampToValueAtTime(freq * 1.15, now + 0.22);
-
-        const bodyLow = audioCtx.createBiquadFilter();
-        bodyLow.type = 'peaking';
-        bodyLow.frequency.setValueAtTime(310, now);
-        bodyLow.Q.setValueAtTime(3.2, now);
-        bodyLow.gain.setValueAtTime(10, now);
-
-        const bodyMid = audioCtx.createBiquadFilter();
-        bodyMid.type = 'peaking';
-        bodyMid.frequency.setValueAtTime(620, now);
-        bodyMid.Q.setValueAtTime(2.8, now);
-        bodyMid.gain.setValueAtTime(6, now);
-
-        stringFilter.connect(bodyLow);
-        bodyLow.connect(bodyMid);
-        bodyMid.connect(noteGain);
-
-        const osc1 = audioCtx.createOscillator();
-        const osc2 = audioCtx.createOscillator();
-        osc1.type = 'triangle';
-        osc2.type = 'sawtooth';
-        osc1.frequency.setValueAtTime(freq, now);
-        osc2.frequency.setValueAtTime(freq, now);
-
-        const sawGain = audioCtx.createGain();
-        sawGain.gain.setValueAtTime(0.25, now);
-        sawGain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
-
-        osc1.connect(stringFilter);
-        osc2.connect(sawGain);
-        sawGain.connect(stringFilter);
-
-        triggerNoise('bandpass', 1450, 2.2, 0.32, 0.02, 0.002);
-
-        noteGain.gain.setValueAtTime(0.0001, now);
-        noteGain.gain.linearRampToValueAtTime(0.75, now + 0.006);
-        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
-
-        osc1.start(now);
-        osc2.start(now);
-        nodes.push(osc1, osc2);
-
-      } else if (currentInstrument === 'violin') {
-        releaseTime = 0.24;
-        const bodyChest = audioCtx.createBiquadFilter();
-        bodyChest.type = 'peaking';
-        bodyChest.frequency.setValueAtTime(290, now);
-        bodyChest.Q.setValueAtTime(2.4, now);
-        bodyChest.gain.setValueAtTime(8, now);
-
-        const bodyWood = audioCtx.createBiquadFilter();
-        bodyWood.type = 'peaking';
-        bodyWood.frequency.setValueAtTime(490, now);
-        bodyWood.Q.setValueAtTime(2.5, now);
-        bodyWood.gain.setValueAtTime(7, now);
-
-        const warmFilter = audioCtx.createBiquadFilter();
-        warmFilter.type = 'lowpass';
-        warmFilter.frequency.setValueAtTime(2600, now);
-        warmFilter.Q.setValueAtTime(1.6, now);
-
-        bodyChest.connect(bodyWood);
-        bodyWood.connect(warmFilter);
-        warmFilter.connect(noteGain);
-
-        const osc1 = audioCtx.createOscillator();
-        const osc2 = audioCtx.createOscillator();
-        osc1.type = 'sawtooth';
-        osc2.type = 'sawtooth';
-        osc1.frequency.setValueAtTime(freq, now);
-        osc2.frequency.setValueAtTime(freq * 1.0025, now);
-
-        const lfo = audioCtx.createOscillator();
-        const lfoGain = audioCtx.createGain();
-        lfo.type = 'sine';
-        lfo.frequency.setValueAtTime(5.6, now);
-        lfoGain.gain.setValueAtTime(0.0001, now);
-        lfoGain.gain.setValueAtTime(0.0001, now + 0.18);
-        lfoGain.gain.linearRampToValueAtTime(6.2, now + 0.45);
-
-        lfo.connect(lfoGain);
-        lfoGain.connect(osc1.frequency);
-        lfoGain.connect(osc2.frequency);
-
-        triggerNoise('bandpass', 1900, 3.5, 0.14, 0.22, 0.08);
-
-        noteGain.gain.setValueAtTime(0.0001, now);
-        noteGain.gain.linearRampToValueAtTime(0.42, now + 0.16);
-
-        osc1.connect(bodyChest);
-        osc2.connect(bodyChest);
-
-        osc1.start(now);
-        osc2.start(now);
-        lfo.start(now);
-        nodes.push(osc1, osc2, lfo);
-      }
-
-      activeOscillators[noteId] = { nodes, noteGain, releaseTime };
-      const keyEl = document.querySelector(`[data-note="${noteId}"]`);
-      if (keyEl) keyEl.classList.add('active');
-    }
-
-    function stopNote(noteId) {
-      const entry = activeOscillators[noteId];
-      delete activeOscillators[noteId];
-      if (entry && audioCtx) {
-        const now = audioCtx.currentTime;
-        const rel = entry.releaseTime || 0.25;
-        try {
-          entry.noteGain.gain.cancelScheduledValues(now);
-          entry.noteGain.gain.setValueAtTime(Math.max(0.0001, entry.noteGain.gain.value), now);
-          entry.noteGain.gain.exponentialRampToValueAtTime(0.0001, now + rel);
-          entry.nodes.forEach((osc) => {
-            try { osc.stop(now + rel + 0.02); } catch (e) {}
-          });
-        } catch (e) {}
-      }
-      const keyEl = document.querySelector(`[data-note="${noteId}"]`);
-      if (keyEl) keyEl.classList.remove('active');
-    }
-
-    // 무지개 색상 건반 생성 및 멀티터치/글리산도 이벤트 연결
-    function buildKeyboard() {
-      const area = $('keyboardArea');
-      area.innerHTML = '';
-
-      KEYS.forEach((k) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.dataset.note = k.id;
-        btn.dataset.freq = k.freq;
-        btn.className = `piano-key white-key flex-1 h-full rounded-xl border-b-4 ${k.bg} ${k.text} ${k.border} flex flex-col items-center justify-end pb-3 shadow-sm cursor-pointer`;
-        btn.innerHTML = `
-          ${k.sub ? `<span class="text-[10px] sm:text-xs font-bold opacity-85 leading-none mb-0.5">${k.sub}</span>` : ''}
-          <span class="text-base sm:text-xl font-extrabold leading-none">${k.label}</span>
-        `;
-        area.appendChild(btn);
-      });
-
-      const releasePointerNote = (pointerId) => {
-        const prevNote = activePointers.get(pointerId);
-        if (prevNote) {
-          activePointers.delete(pointerId);
-          if (![...activePointers.values()].includes(prevNote)) {
-            stopNote(prevNote);
-          }
-        }
-      };
-
-      area.addEventListener('pointerdown', (e) => {
-        const keyEl = e.target.closest('.piano-key');
-        if (!keyEl) return;
-        e.preventDefault();
-        area.setPointerCapture(e.pointerId);
-        const noteId = keyEl.dataset.note;
-        const freq = parseFloat(keyEl.dataset.freq);
-        activePointers.set(e.pointerId, noteId);
-        playNote(noteId, freq);
-      });
-
-      area.addEventListener('pointermove', (e) => {
-        if (!activePointers.has(e.pointerId)) return;
-        const el = document.elementFromPoint(e.clientX, e.clientY);
-        const keyEl = el ? el.closest('.piano-key') : null;
-        const prevNote = activePointers.get(e.pointerId);
-
-        if (!keyEl) {
-          releasePointerNote(e.pointerId);
-          return;
-        }
-        const nextNote = keyEl.dataset.note;
-        if (nextNote !== prevNote) {
-          releasePointerNote(e.pointerId);
-          activePointers.set(e.pointerId, nextNote);
-          playNote(nextNote, parseFloat(keyEl.dataset.freq));
-        }
-      });
-
-      area.addEventListener('pointerup', (e) => releasePointerNote(e.pointerId));
-      area.addEventListener('pointercancel', (e) => releasePointerNote(e.pointerId));
-    }
-
-    // 사진 첨부 & 카메라 촬영
-    function handlePhotoFile(file) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        $('photoPreview').src = ev.target.result;
-        $('photoPreviewWrap').classList.remove('hidden');
-        showToast('사진이 등록되었습니다!');
-      };
-      reader.readAsDataURL(file);
-    }
-
-    $('albumInput').addEventListener('change', (e) => handlePhotoFile(e.target.files[0]));
-    $('cameraInput').addEventListener('change', (e) => handlePhotoFile(e.target.files[0]));
-    $('removePhotoBtn').addEventListener('click', () => {
-      $('photoPreview').src = '';
-      $('photoPreviewWrap').classList.add('hidden');
-      $('albumInput').value = '';
-      $('cameraInput').value = '';
     });
 
-    // 녹음 및 구간 관리
-    function startRecording() {
+    async function startRecording() {
+      stopMixPlayback(false);
       initAudioGraph();
+      if (!micStream) {
+        await connectMicrophone(false);
+      }
+
       recordedChunks = [];
       try {
         mediaRecorder = new MediaRecorder(mixDestination.stream);
       } catch (e) {
-        showToast('이 브라우저에서는 녹음 기능을 시작할 수 없습니다.');
+        showToast('녹음 장치를 초기화할 수 없습니다.');
         return;
       }
 
@@ -725,29 +729,49 @@
         if (e.data && e.data.size > 0) recordedChunks.push(e.data);
       };
 
-      mediaRecorder.onstop = () => {
-        const durationSec = Math.max(1, (Date.now() - recordStartTime) / 1000);
+      mediaRecorder.onstop = async () => {
         const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
         const url = URL.createObjectURL(blob);
+        try {
+          const arrBuf = await blob.arrayBuffer();
+          const audioBuffer = await audioCtx.decodeAudioData(arrBuf);
+          const duration = audioBuffer.duration;
 
-        if (rerecordIndex !== null && clips[rerecordIndex]) {
-          URL.revokeObjectURL(clips[rerecordIndex].url);
-          clips[rerecordIndex] = { blob, url, duration: durationSec };
-          showToast(`구간 ${rerecordIndex + 1}이 새로운 소리로 교체되었습니다!`);
-          cancelRerecord();
-        } else {
-          clips.push({ blob, url, duration: durationSec });
-          showToast(`구간 ${clips.length} 녹음 완료!`);
+          if (rerecordIndex !== null && clips[rerecordIndex]) {
+            URL.revokeObjectURL(clips[rerecordIndex].url);
+            clips[rerecordIndex].blob = blob;
+            clips[rerecordIndex].url = url;
+            clips[rerecordIndex].audioBuffer = audioBuffer;
+            clips[rerecordIndex].duration = duration;
+            showToast(`조각 ${rerecordIndex + 1}이 새롭게 녹음되었습니다!`);
+            cancelRerecord();
+          } else {
+            const startTime = getTimelineTotalDuration();
+            clips.push({
+              name: `녹음 소리 ${clips.length + 1}`,
+              sourceType: 'mic',
+              blob,
+              url,
+              audioBuffer,
+              duration,
+              startTime: Math.round(startTime * 10) / 10
+            });
+            showToast('새 소리 조각이 타임라인에 추가되었습니다!');
+          }
+          renderAllClipViews();
+        } catch (err) {
+          showToast('녹음된 오디오를 처리하지 못했습니다.');
         }
-        renderClips();
       };
 
       mediaRecorder.start();
       isRecording = true;
       recordStartTime = Date.now();
       $('recordBtn').textContent = '⏹️ 녹음 멈추기';
-      $('recordBtn').className = 'sm:col-span-2 py-4 px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition';
+      $('recordBtn').className = 'w-full py-4 px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition';
       $('recBadge').className = 'w-3 h-3 rounded-full bg-rose-500 animate-ping';
+      $('studioModeBadge').textContent = '녹음 중';
+      $('studioModeBadge').className = 'px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[11px] font-bold';
 
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
@@ -762,96 +786,423 @@
       isRecording = false;
       clearInterval(timerInterval);
       $('timerDisplay').textContent = '00:00';
-      $('recordBtn').textContent = rerecordIndex !== null ? `🎙️ 구간 ${rerecordIndex + 1} 다시 녹음 시작` : '🎙️ 녹음 시작';
-      $('recordBtn').className = 'sm:col-span-2 py-4 px-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition';
+      $('recordBtn').textContent = rerecordIndex !== null ? `🎙️ 조각 ${rerecordIndex + 1} 다시 녹음 시작` : '🎙️ 녹음 시작';
+      $('recordBtn').className = 'w-full py-4 px-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition';
       $('recBadge').className = 'w-3 h-3 rounded-full bg-slate-500';
+      $('studioModeBadge').textContent = '대기 중';
+      $('studioModeBadge').className = 'px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[11px] font-bold';
     }
 
-    $('recordBtn').addEventListener('click', () => {
-      if (isRecording) stopRecording();
-      else startRecording();
-    });
-
     function prepareRerecord(idx) {
-      if (isRecording) {
-        showToast('먼저 현재 진행 중인 녹음을 멈춰주세요.');
-        return;
-      }
+      stopMixPlayback(false);
       rerecordIndex = idx;
-      $('rerecordLabel').textContent = `구간 ${idx + 1} 다시 녹음 준비됨 (아래 버튼을 눌러 녹음하세요)`;
       $('rerecordBanner').classList.remove('hidden');
-      $('recordBtn').textContent = `🎙️ 구간 ${idx + 1} 다시 녹음 시작`;
+      $('rerecordLabel').textContent = `조각 ${idx + 1} (${clips[idx].name}) 다시 녹음 준비됨`;
+      $('recordBtn').textContent = `🎙️ 조각 ${idx + 1} 다시 녹음 시작`;
+      $('recordBtn').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     function cancelRerecord() {
       rerecordIndex = null;
       $('rerecordBanner').classList.add('hidden');
-      if (!isRecording) {
-        $('recordBtn').textContent = '🎙️ 녹음 시작';
-      }
+      $('recordBtn').textContent = '🎙️ 녹음 시작';
     }
 
-    function stopAudioPlayback() {
-      if (currentPlayingAudio) {
-        currentPlayingAudio.pause();
-        currentPlayingAudio = null;
-      }
-      currentPlayingIndex = -1;
-      isPlayingAll = false;
-      $('playAllBtn').textContent = '▶️ 전체 이어듣기';
-      renderClips();
-    }
-
-    function playClip(idx, chainNext = false) {
-      if (!clips[idx]) return;
-      if (currentPlayingAudio) {
-        currentPlayingAudio.pause();
-        currentPlayingAudio = null;
-      }
-      currentPlayingIndex = idx;
-      const audio = new Audio(clips[idx].url);
-      currentPlayingAudio = audio;
-      renderClips();
-
-      audio.onended = () => {
-        if (chainNext && idx + 1 < clips.length) {
-          playClip(idx + 1, true);
-        } else {
-          stopAudioPlayback();
-        }
+    // 활동 사진 등록
+    function handlePhotoFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        $('photoPreview').src = e.target.result;
+        $('photoEmptyHint').classList.add('hidden');
+        $('photoPreviewWrap').classList.remove('hidden');
       };
-      audio.play().catch(() => stopAudioPlayback());
+      reader.readAsDataURL(file);
+    }
+
+    $('albumInput').addEventListener('change', (e) => handlePhotoFile(e.target.files[0]));
+    $('cameraInput').addEventListener('change', (e) => handlePhotoFile(e.target.files[0]));
+    $('removePhotoBtn').addEventListener('click', () => {
+      $('photoPreview').src = '';
+      $('photoPreviewWrap').classList.add('hidden');
+      $('photoEmptyHint').classList.remove('hidden');
+      $('albumInput').value = '';
+      $('cameraInput').value = '';
+    });
+
+    // 영역맞춤 캡쳐
+    $('captureBtn').addEventListener('click', async () => {
+      const btn = $('captureBtn');
+      btn.disabled = true;
+      try {
+        const canvasImg = await html2canvas($('captureArea'), {
+          scale: 2,
+          backgroundColor: '#f1f5f9',
+          useCORS: true
+        });
+        const song = ($('songTitle').value.trim() || '우리모둠활동').replace(/[\\/:*?"<>|]/g, '_');
+        const group = ($('groupName').value.trim() || '부족기록').replace(/[\\/:*?"<>|]/g, '_');
+        const a = document.createElement('a');
+        a.href = canvasImg.toDataURL('image/png');
+        a.download = `${song}_${group}_활동기록.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showToast('활동 정보와 사진이 이미지로 저장되었습니다!');
+      } catch (err) {
+        showToast('화면 캡쳐 중 오류가 발생했습니다.');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // 외부 음원 (MP3/WAV) 불러오기
+    $('audioUploadInput').addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length === 0) return;
+      initAudioGraph();
+
+      for (const file of files) {
+        try {
+          const arrBuf = await file.arrayBuffer();
+          const audioBuffer = await audioCtx.decodeAudioData(arrBuf);
+          const url = URL.createObjectURL(file);
+          const cleanName = file.name.replace(/\.[^/.]+$/, '');
+          clips.push({
+            name: cleanName,
+            sourceType: 'file',
+            blob: file,
+            url,
+            audioBuffer,
+            duration: audioBuffer.duration,
+            startTime: Math.round(getTimelineTotalDuration() * 10) / 10
+          });
+        } catch (err) {
+          showToast(`'${file.name}' 파일을 불러오지 못했습니다.`);
+        }
+      }
+      e.target.value = '';
+      renderAllClipViews();
+      showToast('외부 음원이 타임라인에 추가되었습니다!');
+    });
+
+    // 타임라인 길이 및 재생 상태 관리
+    function getTimelineTotalDuration() {
+      if (clips.length === 0) return 0;
+      return clips.reduce((max, c) => Math.max(max, c.startTime + c.duration), 0);
+    }
+
+    function getTimelineViewScale() {
+      return Math.max(12, Math.ceil(getTimelineTotalDuration() + 2));
+    }
+
+    function getActiveTargetDuration() {
+      if (soloClipIndex !== null && clips[soloClipIndex]) {
+        return clips[soloClipIndex].duration;
+      }
+      return getTimelineTotalDuration();
+    }
+
+    function getCurrentPlaybackPosition() {
+      if (isMixPlaying && audioCtx) {
+        const elapsed = audioCtx.currentTime - playStartCtxTime;
+        return Math.min(getActiveTargetDuration(), playStartOffset + elapsed);
+      }
+      return playStartOffset;
+    }
+
+    function stopActiveSources() {
+      activePlaySources.forEach((src) => {
+        try { src.stop(); } catch (e) {}
+      });
+      activePlaySources = [];
+    }
+
+    function stopMixPlayback(resetToZero = true) {
+      if (isMixPlaying) {
+        playStartOffset = getCurrentPlaybackPosition();
+      }
+      stopActiveSources();
+      isMixPlaying = false;
+      if (resetToZero) {
+        playStartOffset = 0;
+        soloClipIndex = null;
+        $('playbackTargetLabel').textContent = '전체 타임라인 재생 준비';
+      }
+      $('playPauseMixBtn').textContent = '▶️ 재생';
+      $('playVisBadge').classList.add('hidden');
+      if (!isRecording) {
+        $('studioModeBadge').textContent = '대기 중';
+        $('studioModeBadge').className = 'px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[11px] font-bold';
+      }
+      updatePlaybackTransportUI();
+      renderClips();
+    }
+
+    function startScheduledPlayback(offsetSec = 0, targetSoloIdx = null) {
+      if (clips.length === 0) {
+        showToast('재생할 소리 조각이 없습니다.');
+        return;
+      }
+      if (isRecording) stopRecording();
+      initAudioGraph();
+      stopActiveSources();
+
+      soloClipIndex = targetSoloIdx;
+      const total = getActiveTargetDuration();
+      const safeOffset = Math.max(0, Math.min(offsetSec >= total - 0.05 ? 0 : offsetSec, total));
+      playStartOffset = safeOffset;
+      playStartCtxTime = audioCtx.currentTime;
+      isMixPlaying = true;
+
+      if (soloClipIndex !== null && clips[soloClipIndex]) {
+        const clip = clips[soloClipIndex];
+        const src = audioCtx.createBufferSource();
+        src.buffer = clip.audioBuffer;
+        src.connect(analyserNode);
+        src.connect(audioCtx.destination);
+        src.start(playStartCtxTime, safeOffset);
+        activePlaySources.push(src);
+        $('playbackTargetLabel').textContent = `단독 듣기: ${soloClipIndex + 1}. ${clip.name}`;
+      } else {
+        clips.forEach((clip) => {
+          const clipEnd = clip.startTime + clip.duration;
+          if (clipEnd <= safeOffset) return;
+          const src = audioCtx.createBufferSource();
+          src.buffer = clip.audioBuffer;
+          src.connect(analyserNode);
+          src.connect(audioCtx.destination);
+          if (clip.startTime >= safeOffset) {
+            src.start(playStartCtxTime + (clip.startTime - safeOffset), 0);
+          } else {
+            src.start(playStartCtxTime, safeOffset - clip.startTime);
+          }
+          activePlaySources.push(src);
+        });
+        $('playbackTargetLabel').textContent = '전체 타임라인 믹스 듣기';
+      }
+
+      $('playPauseMixBtn').textContent = '⏸️ 일시정지';
+      $('playVisBadge').classList.remove('hidden');
+      $('studioModeBadge').textContent = '듣기 재생 중';
+      $('studioModeBadge').className = 'px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 text-[11px] font-bold';
+      updatePlaybackTransportUI();
+      renderClips();
+    }
+
+    function seekPlaybackTo(targetSec) {
+      const total = getActiveTargetDuration();
+      const clamped = Math.max(0, Math.min(total, targetSec));
+      if (isMixPlaying) {
+        startScheduledPlayback(clamped, soloClipIndex);
+      } else {
+        playStartOffset = clamped;
+        updatePlaybackTransportUI();
+      }
+    }
+
+    function playClip(idx) {
+      if (isMixPlaying && soloClipIndex === idx) {
+        stopMixPlayback(false);
+        return;
+      }
+      const startPos = soloClipIndex === idx ? playStartOffset : 0;
+      startScheduledPlayback(startPos, idx);
     }
 
     $('playAllBtn').addEventListener('click', () => {
-      if (isPlayingAll) {
-        stopAudioPlayback();
-        return;
-      }
-      if (clips.length === 0) {
-        showToast('재생할 녹음 구간이 없습니다.');
-        return;
-      }
-      isPlayingAll = true;
-      $('playAllBtn').textContent = '⏹️ 재생 멈추기';
-      playClip(0, true);
+      startScheduledPlayback(0, null);
     });
 
-    function moveClip(idx, dir) {
-      const target = idx + dir;
-      if (target < 0 || target >= clips.length) return;
-      stopAudioPlayback();
-      [clips[idx], clips[target]] = [clips[target], clips[idx]];
-      renderClips();
+    $('playPauseMixBtn').addEventListener('click', () => {
+      if (isMixPlaying) {
+        stopMixPlayback(false);
+      } else {
+        startScheduledPlayback(playStartOffset, soloClipIndex);
+      }
+    });
+
+    $('skipStartBtn').addEventListener('click', () => seekPlaybackTo(0));
+    $('rewindBtn').addEventListener('click', () => seekPlaybackTo(getCurrentPlaybackPosition() - 2));
+    $('forwardBtn').addEventListener('click', () => seekPlaybackTo(getCurrentPlaybackPosition() + 2));
+    $('stopMixBtn').addEventListener('click', () => stopMixPlayback(true));
+
+    $('seekSlider').addEventListener('input', (e) => {
+      const total = getActiveTargetDuration();
+      const target = (Number(e.target.value) / 1000) * total;
+      seekPlaybackTo(target);
+    });
+
+    function autoAlignSequential() {
+      stopMixPlayback(true);
+      let cursor = 0;
+      clips.forEach((c) => {
+        c.startTime = Math.round(cursor * 10) / 10;
+        cursor += c.duration;
+      });
+      renderAllClipViews();
+      showToast('모든 소리 조각을 차례대로 정렬했습니다.');
+    }
+
+    function shiftClipStart(idx, delta) {
+      clips[idx].startTime = Math.max(0, Math.round((clips[idx].startTime + delta) * 10) / 10);
+      if (isMixPlaying) startScheduledPlayback(getCurrentPlaybackPosition(), soloClipIndex);
+      renderAllClipViews();
+    }
+
+    function snapClipAfterPrevious(idx) {
+      if (idx === 0) {
+        clips[0].startTime = 0;
+      } else {
+        const prev = clips[idx - 1];
+        clips[idx].startTime = Math.round((prev.startTime + prev.duration) * 10) / 10;
+      }
+      if (isMixPlaying) startScheduledPlayback(getCurrentPlaybackPosition(), soloClipIndex);
+      renderAllClipViews();
     }
 
     function deleteClip(idx) {
-      stopAudioPlayback();
+      stopMixPlayback(true);
       if (rerecordIndex === idx) cancelRerecord();
+      if (selectedClipIndex === idx) selectedClipIndex = null;
       URL.revokeObjectURL(clips[idx].url);
       clips.splice(idx, 1);
-      renderClips();
-      showToast('선택한 구간을 삭제했습니다.');
+      renderAllClipViews();
+      showToast('선택한 소리 조각을 삭제했습니다.');
+    }
+
+    function updatePlaybackTransportUI() {
+      const total = getActiveTargetDuration();
+      const current = getCurrentPlaybackPosition();
+      $('playbackTimeText').textContent = `${formatTimeTenths(current)} / ${formatTimeTenths(total)}`;
+      $('seekSlider').value = total > 0 ? Math.round((current / total) * 1000) : 0;
+
+      const scaleSec = getTimelineViewScale();
+      const head = $('timelinePlayhead');
+      if (head) {
+        const timelinePos = soloClipIndex !== null && clips[soloClipIndex]
+          ? clips[soloClipIndex].startTime + current
+          : current;
+        const pct = Math.min(100, Math.max(0, (timelinePos / scaleSec) * 100));
+        head.style.left = `${pct}%`;
+      }
+    }
+
+    // 프리미어 프로 스타일 눈금자(Ruler) 클릭/드래그로 재생 헤드 이동
+    function setupTimelineRulerScrub() {
+      const ruler = $('timelineRuler');
+      if (!ruler || ruler.dataset.bound === '1') return;
+      ruler.dataset.bound = '1';
+
+      const scrubToClientX = (clientX) => {
+        if (clips.length === 0) return;
+        const rect = ruler.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / (rect.width || 1)));
+        const scaleSec = getTimelineViewScale();
+        const total = getTimelineTotalDuration();
+        const targetSec = Math.min(total, ratio * scaleSec);
+        if (soloClipIndex !== null) {
+          soloClipIndex = null;
+          $('playbackTargetLabel').textContent = '전체 타임라인 믹스 듣기';
+        }
+        seekPlaybackTo(targetSec);
+      };
+
+      ruler.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        ruler.setPointerCapture(e.pointerId);
+        scrubToClientX(e.clientX);
+
+        const onMove = (ev) => scrubToClientX(ev.clientX);
+        const onUp = () => {
+          ruler.removeEventListener('pointermove', onMove);
+          ruler.removeEventListener('pointerup', onUp);
+          ruler.removeEventListener('pointercancel', onUp);
+        };
+        ruler.addEventListener('pointermove', onMove);
+        ruler.addEventListener('pointerup', onUp);
+        ruler.addEventListener('pointercancel', onUp);
+      });
+    }
+
+    function renderTimeline() {
+      setupTimelineRulerScrub();
+      const ruler = $('timelineRuler');
+      const tracks = $('timelineTracks');
+      const scaleSec = getTimelineViewScale();
+
+      const ticks = [0, 0.25, 0.5, 0.75, 1].map((r) => `${(scaleSec * r).toFixed(1)}초`);
+      ruler.innerHTML = ticks.map((t) => `<span>${t}</span>`).join('');
+
+      if (clips.length === 0) {
+        tracks.innerHTML = `
+          <div class="py-6 text-center text-xs text-slate-500 font-semibold">
+            소리를 녹음하거나 외부 음원을 불러오면 이곳에서 위치를 배치할 수 있습니다.
+          </div>`;
+        return;
+      }
+
+      tracks.innerHTML = clips.map((clip, i) => {
+        const color = TRACK_COLORS[i % TRACK_COLORS.length];
+        const leftPct = Math.min(95, (clip.startTime / scaleSec) * 100);
+        const widthPct = Math.max(6, Math.min(100 - leftPct, (clip.duration / scaleSec) * 100));
+        const isSelected = selectedClipIndex === i;
+        return `
+          <div class="relative h-10 rounded-xl bg-slate-900/90 border border-slate-800/80 flex items-center">
+            <div data-track-idx="${i}" style="left: ${leftPct}%; width: ${widthPct}%;" class="timeline-clip absolute top-0.5 bottom-0.5 rounded-lg border ${color.bar} ${isSelected ? 'ring-2 ring-white shadow-md' : ''} px-2.5 flex items-center justify-between text-white text-[11px] font-extrabold shadow-sm cursor-pointer active:cursor-grabbing overflow-hidden">
+              <span class="truncate">${i + 1}. ${clip.name}</span>
+              <span class="ml-1.5 font-mono text-[10px] opacity-90 shrink-0">${clip.startTime.toFixed(1)}s</span>
+            </div>
+          </div>`;
+      }).join('');
+
+      tracks.querySelectorAll('.timeline-clip').forEach((bar) => {
+        bar.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          const idx = Number(bar.dataset.trackIdx);
+          const startX = e.clientX;
+          const origStart = clips[idx].startTime;
+          const trackWidth = tracks.clientWidth || 1;
+          let hasMoved = false;
+          bar.setPointerCapture(e.pointerId);
+
+          const onMove = (ev) => {
+            const dx = ev.clientX - startX;
+            if (Math.abs(dx) > 6) hasMoved = true;
+            if (!hasMoved) return;
+
+            const deltaSec = (dx / trackWidth) * scaleSec;
+            clips[idx].startTime = Math.max(0, Math.round((origStart + deltaSec) * 10) / 10);
+            const updatedLeft = Math.min(95, (clips[idx].startTime / scaleSec) * 100);
+            const updatedWidth = Math.max(6, Math.min(100 - updatedLeft, (clips[idx].duration / scaleSec) * 100));
+            bar.style.left = `${updatedLeft}%`;
+            bar.style.width = `${updatedWidth}%`;
+            const timeTag = bar.querySelector('span:last-child');
+            if (timeTag) timeTag.textContent = `${clips[idx].startTime.toFixed(1)}s`;
+          };
+
+          const onUp = () => {
+            bar.removeEventListener('pointermove', onMove);
+            bar.removeEventListener('pointerup', onUp);
+            bar.removeEventListener('pointercancel', onUp);
+
+            if (!hasMoved) {
+              selectedClipIndex = idx;
+              startScheduledPlayback(clips[idx].startTime, null);
+              $('playbackTargetLabel').textContent = `전체 타임라인 재생 (${idx + 1}번 조각 위치부터)`;
+              renderTimeline();
+              return;
+            }
+
+            if (isMixPlaying) startScheduledPlayback(getCurrentPlaybackPosition(), soloClipIndex);
+            renderAllClipViews();
+          };
+
+          bar.addEventListener('pointermove', onMove);
+          bar.addEventListener('pointerup', onUp);
+          bar.addEventListener('pointercancel', onUp);
+        });
+      });
     }
 
     function renderClips() {
@@ -859,39 +1210,65 @@
       if (clips.length === 0) {
         list.innerHTML = `
           <div class="py-10 px-4 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-slate-400 text-sm font-semibold">
-            아직 녹음된 구간이 없습니다. 위에서 [녹음 시작] 버튼을 눌러 소리를 담아보세요!
+            아직 등록된 소리가 없습니다. [녹음 시작] 또는 [MP3/WAV 불러오기]를 눌러보세요!
           </div>`;
         return;
       }
 
       list.innerHTML = clips.map((clip, i) => {
-        const playing = currentPlayingIndex === i;
+        const playing = isMixPlaying && soloClipIndex === i;
+        const color = TRACK_COLORS[i % TRACK_COLORS.length];
+        const isOverlapping = clips.some((other, j) => i !== j && clip.startTime < other.startTime + other.duration - 0.05 && clip.startTime + clip.duration > other.startTime + 0.05);
+
         return `
-          <div class="p-3.5 sm:p-4 rounded-2xl border ${playing ? 'border-indigo-400 bg-indigo-50/70' : 'border-slate-200 bg-slate-50'} flex flex-wrap items-center justify-between gap-2.5">
-            <div class="flex items-center gap-3">
-              <span class="w-8 h-8 rounded-xl bg-slate-900 text-white font-extrabold text-xs flex items-center justify-center">${i + 1}</span>
-              <div>
-                <p class="text-sm font-extrabold text-slate-800">소리 구간 ${i + 1}</p>
-                <p class="text-xs text-slate-500 font-semibold">길이: ${formatTime(clip.duration)}</p>
+          <div class="p-3.5 sm:p-4 rounded-2xl border ${playing ? 'border-sky-400 bg-sky-50/70' : 'border-slate-200 bg-slate-50'} flex flex-col gap-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-xl ${color.badge} text-white font-extrabold text-xs flex items-center justify-center">${i + 1}</span>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <p class="text-sm font-extrabold text-slate-800">${clip.name}</p>
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${clip.sourceType === 'file' ? 'bg-indigo-100 text-indigo-700' : 'bg-rose-100 text-rose-700'}">${clip.sourceType === 'file' ? '외부음원' : '녹음'}</span>
+                    ${isOverlapping ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">겹침 배치됨</span>' : ''}
+                  </div>
+                  <p class="text-xs text-slate-500 font-semibold">시작: ${clip.startTime.toFixed(1)}초 · 길이: ${clip.duration.toFixed(1)}초</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button type="button" onclick="playClip(${i})" class="px-3 py-2 rounded-xl ${playing ? 'bg-sky-600 text-white' : 'bg-white border border-slate-200 text-slate-800 hover:bg-slate-100'} text-xs font-bold active:scale-95">
+                  ${playing ? '⏸️ 일시정지' : '▶️ 단독 듣기'}
+                </button>
+                ${clip.sourceType === 'mic' ? `<button type="button" onclick="prepareRerecord(${i})" class="px-3 py-2 rounded-xl bg-amber-100 text-amber-900 hover:bg-amber-200 text-xs font-bold active:scale-95">🔄 다시 녹음</button>` : ''}
+                <button type="button" onclick="deleteClip(${i})" class="px-2.5 py-2 rounded-xl bg-rose-100 text-rose-700 hover:bg-rose-200 text-xs font-bold">🗑️</button>
               </div>
             </div>
-            <div class="flex flex-wrap items-center gap-1.5">
-              <button type="button" onclick="${playing ? 'stopAudioPlayback()' : `playClip(${i}, false)`}" class="px-3 py-2 rounded-xl ${playing ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200 text-slate-800 hover:bg-slate-100'} text-xs font-bold active:scale-95">
-                ${playing ? '⏹️ 멈춤' : '▶️ 듣기'}
-              </button>
-              <button type="button" onclick="prepareRerecord(${i})" class="px-3 py-2 rounded-xl bg-amber-100 text-amber-900 hover:bg-amber-200 text-xs font-bold active:scale-95">🔄 다시 녹음</button>
-              <button type="button" onclick="moveClip(${i}, -1)" ${i === 0 ? 'disabled' : ''} class="px-2.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-xs font-bold disabled:opacity-30">▲</button>
-              <button type="button" onclick="moveClip(${i}, 1)" ${i === clips.length - 1 ? 'disabled' : ''} class="px-2.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-xs font-bold disabled:opacity-30">▼</button>
-              <button type="button" onclick="deleteClip(${i})" class="px-2.5 py-2 rounded-xl bg-rose-100 text-rose-700 hover:bg-rose-200 text-xs font-bold">🗑️</button>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/70 text-xs">
+              <span class="font-bold text-slate-600">시작 위치 조절:</span>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button type="button" onclick="shiftClipStart(${i}, -0.5)" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 font-bold text-slate-700 active:scale-95">-0.5초</button>
+                <span class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white font-mono font-bold">${clip.startTime.toFixed(1)}초</span>
+                <button type="button" onclick="shiftClipStart(${i}, 0.5)" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 font-bold text-slate-700 active:scale-95">+0.5초</button>
+                <button type="button" onclick="snapClipAfterPrevious(${i})" class="px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold active:scale-95">${i === 0 ? '0초로 이동' : '앞 소리 뒤에 붙이기'}</button>
+              </div>
             </div>
           </div>`;
       }).join('');
     }
 
+    function renderAllClipViews() {
+      renderTimeline();
+      renderClips();
+      updatePlaybackTransportUI();
+      const total = getTimelineTotalDuration();
+      $('captureTrackSummary').textContent = `${clips.length}개 조각 · 총 ${formatTime(total)}`;
+    }
+
     // 실제 MP3 인코딩 및 저장
     $('exportMp3Btn').addEventListener('click', async () => {
       if (clips.length === 0) {
-        showToast('저장할 녹음 구간이 없습니다. 먼저 소리를 녹음해 주세요!');
+        showToast('저장할 소리 조각이 없습니다. 먼저 녹음하거나 음원을 불러와 주세요!');
         return;
       }
       initAudioGraph();
@@ -901,30 +1278,27 @@
 
       try {
         const targetRate = 44100;
-        const decodedBuffers = [];
-        let totalSamples = 0;
+        const totalDuration = Math.max(0.5, getTimelineTotalDuration());
+        const offline = new OfflineAudioContext(1, Math.ceil(totalDuration * targetRate), targetRate);
 
         for (const clip of clips) {
-          const arrBuf = await clip.blob.arrayBuffer();
-          const decoded = await audioCtx.decodeAudioData(arrBuf);
-          const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * targetRate), targetRate);
+          let buf = clip.audioBuffer;
+          if (!buf) {
+            const arrBuf = await clip.blob.arrayBuffer();
+            buf = await audioCtx.decodeAudioData(arrBuf);
+          }
           const src = offline.createBufferSource();
-          src.buffer = decoded;
+          src.buffer = buf;
           src.connect(offline.destination);
-          src.start(0);
-          const resampled = await offline.startRendering();
-          const chData = resampled.getChannelData(0);
-          decodedBuffers.push(chData);
-          totalSamples += chData.length;
+          src.start(clip.startTime);
         }
 
-        const merged = new Int16Array(totalSamples);
-        let offset = 0;
-        for (const buf of decodedBuffers) {
-          for (let i = 0; i < buf.length; i++) {
-            const s = Math.max(-1, Math.min(1, buf[i]));
-            merged[offset++] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-          }
+        const rendered = await offline.startRendering();
+        const chData = rendered.getChannelData(0);
+        const merged = new Int16Array(chData.length);
+        for (let i = 0; i < chData.length; i++) {
+          const s = Math.max(-1, Math.min(1, chData[i]));
+          merged[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
         }
 
         const encoder = new lamejs.Mp3Encoder(1, targetRate, 128);
@@ -1026,6 +1400,17 @@
 
     function drawWaveform() {
       requestAnimationFrame(drawWaveform);
+
+      if (isMixPlaying) {
+        const total = getActiveTargetDuration();
+        const cur = getCurrentPlaybackPosition();
+        if (cur >= total) {
+          stopMixPlayback(true);
+        } else {
+          updatePlaybackTransportUI();
+        }
+      }
+
       const w = canvas.width;
       const h = canvas.height;
       ctx2d.fillStyle = '#020617';
@@ -1049,7 +1434,7 @@
       let x = 0;
       for (let i = 0; i < bufferLength; i++) {
         const barHeight = (dataArray[i] / 255) * (h * 0.85);
-        ctx2d.fillStyle = isRecording ? '#fb7185' : '#38bdf8';
+        ctx2d.fillStyle = isRecording ? '#fb7185' : (isMixPlaying ? '#34d399' : '#38bdf8');
         ctx2d.fillRect(x, (h - barHeight) / 2, Math.max(2, barWidth - 2), Math.max(3, barHeight));
         x += barWidth;
       }
@@ -1057,6 +1442,8 @@
 
     window.addEventListener('resize', resizeCanvas);
     window.onload = () => {
+      const now = new Date();
+      $('captureDateBadge').textContent = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
       buildKeyboard();
       resizeCanvas();
       drawWaveform();
