@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>상상: 내가 음악을 만든다면</title>
+  <title>부족 음악회: 우리가 소리를 만들었어요</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
@@ -30,8 +30,8 @@
       <div class="flex items-center gap-2.5">
         <div class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-xs">🥁</div>
         <div>
-          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">상상: 내가 음악을 만든다면</h1>
-          <p class="text-[11px] sm:text-xs text-slate-500 font-semibold">교실 도구 소리와 미니 악기를 녹음해 우리 모둠만의 음악을 만들어요</p>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">부족 음악회: 우리가 소리를 만들었어요</h1>
+          <p class="text-[11px] sm:text-xs text-slate-500 font-semibold">교실 도구 소리와 미니 악기를 무손실 원음으로 녹음해 우리 모둠만의 음악을 만들어요</p>
         </div>
       </div>
 
@@ -133,15 +133,18 @@
     <!-- 오른쪽 컬럼: 녹음 스튜디오, 미니 건반, 타임라인, 조각 목록 -->
     <div class="lg:col-span-7 flex flex-col gap-5">
 
-      <!-- 1. 소리 녹음 스튜디오 -->
+      <!-- 1. 소리 녹음 스튜디오 (무손실 PCM 엔진 & 미디어 볼륨 모드 고정) -->
       <section class="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-md border border-slate-800">
-        <div class="flex items-center justify-between gap-2 mb-3.5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3.5">
           <div class="flex items-center gap-2">
             <span id="recBadge" class="w-3 h-3 rounded-full bg-slate-500"></span>
             <h2 class="text-base sm:text-lg font-extrabold">🎙️ 소리 녹음 스튜디오</h2>
             <span id="studioModeBadge" class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[11px] font-bold">대기 중</span>
           </div>
-          <span id="timerDisplay" class="font-mono text-xl sm:text-2xl font-extrabold text-rose-400">00:00</span>
+          <div class="flex items-center gap-2.5">
+            <span class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold">🎵 고음질 미디어 모드</span>
+            <span id="timerDisplay" class="font-mono text-xl sm:text-2xl font-extrabold text-rose-400">00:00</span>
+          </div>
         </div>
 
         <div id="canvasBox" class="relative w-full h-24 sm:h-28 bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden mb-3.5">
@@ -151,17 +154,17 @@
           </div>
         </div>
 
-        <!-- 주변 소리 줄이기(노이즈 캔슬링) & 입·출력 소리 크기 조절 패널 -->
+        <!-- 교실 맞춤형 수음 프리셋 & 입·출력 볼륨 조절 패널 -->
         <div class="mb-4 p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col gap-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <span class="text-xs font-extrabold text-slate-200 flex items-center gap-1.5">
-              <span>🔇 주변 소리 줄이기</span>
-              <span id="noiseModeDesc" class="text-[11px] font-semibold text-indigo-300">(교실 집중 모드)</span>
+              <span>🎚️ 수음 음질 모드</span>
+              <span id="noiseModeDesc" class="text-[11px] font-semibold text-indigo-300">(악기·음악 원음 추천)</span>
             </span>
             <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
-              <button type="button" id="nc-raw" onclick="setNoiseMode('raw')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition">🎵 원음 그대로</button>
-              <button type="button" id="nc-classroom" onclick="setNoiseMode('classroom')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-indigo-600 text-white shadow-xs transition">🏫 교실 집중</button>
-              <button type="button" id="nc-strong" onclick="setNoiseMode('strong')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition">🔇 강력 차단</button>
+              <button type="button" id="nc-raw" onclick="setNoiseMode('raw')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-indigo-600 text-white shadow-xs transition">🎵 악기 원음</button>
+              <button type="button" id="nc-classroom" onclick="setNoiseMode('classroom')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition">🏫 교실 잡음줄임</button>
+              <button type="button" id="nc-voice" onclick="setNoiseMode('voice')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition">🗣️ 목소리 집중</button>
             </div>
           </div>
 
@@ -303,16 +306,19 @@
     </div>
   </main>
 
-  <!-- 마이크 권한 안내 모달 (앱 시작 시 바로 표시 + 갤럭시 패드 크롬 최적화) -->
+  <!-- 마이크 권한 안내 모달 (앱 시작 시 바로 표시 + 미디어 볼륨 모드 안내) -->
   <div id="micModal" class="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-lg font-extrabold text-slate-900">🎤 마이크 켜고 시작하기</h3>
         <button id="closeMicModalBtn" type="button" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 font-bold text-lg hover:bg-slate-200">✕</button>
       </div>
-      <p class="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">
-        교실 도구와 악기 소리를 녹음하려면 태블릿 마이크 허용이 필요해요. 아래 빨간 버튼을 누른 뒤 화면 위쪽 창에서 <strong>[허용]</strong>을 눌러주세요!
+      <p class="text-xs sm:text-sm text-slate-600 mb-3 leading-relaxed">
+        교실 도구와 악기 소리를 무손실 원음으로 녹음하려면 마이크 허용이 필요해요. 아래 빨간 버튼을 누른 뒤 위쪽 창에서 <strong>[허용]</strong>을 눌러주세요!
       </p>
+      <div class="mb-4 p-3 rounded-2xl bg-indigo-50 border border-indigo-100 text-xs text-indigo-900 font-semibold leading-relaxed">
+        🎵 <strong>고음질 미디어 모드 적용:</strong> 녹음 중에도 태블릿 음량 버튼이 통화 음량이 아닌 <strong>미디어 음량</strong>으로 작동해 악기 소리가 뭉개지지 않아요.
+      </div>
       <div id="micBlockedGuide" class="hidden mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
         <p class="font-extrabold mb-1">⚠️ 마이크 권한이 차단되어 있을 때 해결 방법:</p>
         <p>1. 크롬 주소창 왼쪽의 <strong>자물쇠(또는 설정) 아이콘</strong> 터치</p>
@@ -395,60 +401,59 @@
       { bar: 'bg-purple-500 border-purple-300', badge: 'bg-purple-600' }
     ];
 
+    // Web Audio 그래프 노드 (무손실 PCM 수음 + 미디어 모드 고정)
     let audioCtx = null;
     let micStream = null;
     let micSource = null;
     let micHighpass = null;
+    let micPresenceFilter = null;
     let micInputGain = null;
-    let micCompressor = null;
-    let micGateGain = null;
+    let micLimiter = null;
     let micAnalyser = null;
+
     let monitorGain = null;
     let masterOutputGain = null;
+    let masterLimiter = null;
     let synthBus = null;
+    let recordMixBus = null;
+    let pcmCaptureNode = null;
+    let silentSink = null;
     let analyserNode = null;
-    let mixDestination = null;
     let noiseBuffer = null;
 
-    let currentNoiseMode = 'classroom';
+    let currentNoiseMode = 'raw';
     let micGainPercent = 100;
     let speakerVolumePercent = 100;
 
+    // 모든 프리셋에서 echoCancellation: false를 유지하여 안드로이드 '미디어 음량(STREAM_MUSIC)' 모드 고정
     const NOISE_MODES = {
       raw: {
-        desc: '(원음 그대로 · 섬세한 울림)',
-        highpassFreq: 15,
-        gateThreshold: 0,
-        gateFloor: 1,
-        useComp: false,
-        constraints: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+        desc: '(악기·음악 원음 추천 · 미디어 모드)',
+        highpassFreq: 70,
+        presenceGain: 0,
+        constraints: { echoCancellation: false, noiseSuppression: false, autoGainControl: true }
       },
       classroom: {
-        desc: '(교실 집중 · 옆 모둠 잡음 감소)',
-        highpassFreq: 105,
-        gateThreshold: 0.012,
-        gateFloor: 0.14,
-        useComp: true,
-        constraints: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }
+        desc: '(교실 잡음 줄이기 · 미디어 모드 유지)',
+        highpassFreq: 115,
+        presenceGain: 1.5,
+        constraints: { echoCancellation: false, noiseSuppression: true, autoGainControl: true }
       },
-      strong: {
-        desc: '(강력 차단 · 주변 시끄러울 때)',
-        highpassFreq: 185,
-        gateThreshold: 0.028,
-        gateFloor: 0.02,
-        useComp: true,
-        constraints: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }
+      voice: {
+        desc: '(목소리·발표 집중 · 또렷한 말소리)',
+        highpassFreq: 145,
+        presenceGain: 4.0,
+        constraints: { echoCancellation: false, noiseSuppression: true, autoGainControl: true }
       }
     };
 
     let currentInstrument = 'piano';
     const activeVoices = new Map();
 
-    let mediaRecorder = null;
-    let recordedChunks = [];
+    // 무손실 Float32 PCM 직접 녹음 버퍼
+    let pcmChunks = [];
+    let pcmTotalSamples = 0;
     let isRecording = false;
-    let recordStartTime = 0;
-    let timerInterval = null;
     let rerecordIndex = null;
 
     let clips = [];
@@ -494,28 +499,91 @@
       return buf;
     }
 
+    // 안드로이드/크롬 미디어 세션 등록 (물리 음량 버튼이 미디어 음량으로 동작하도록 지원)
+    function registerMediaSession(state = 'paused') {
+      if (!('mediaSession' in navigator)) return;
+      try {
+        if (!navigator.mediaSession.metadata && typeof MediaMetadata !== 'undefined') {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: $('songTitle')?.value.trim() || '부족 음악회 스튜디오',
+            artist: $('groupName')?.value.trim() || '우리가 소리를 만들었어요',
+            album: '교실 음악 스튜디오'
+          });
+        }
+        navigator.mediaSession.playbackState = state;
+        navigator.mediaSession.setActionHandler('play', () => {
+          if (!isMixPlaying && clips.length > 0) startScheduledPlayback(playStartOffset, soloClipIndex);
+        });
+        navigator.mediaSession.setActionHandler('pause', () => {
+          if (isMixPlaying) stopMixPlayback(false);
+        });
+        navigator.mediaSession.setActionHandler('stop', () => {
+          if (isMixPlaying) stopMixPlayback(true);
+        });
+        navigator.mediaSession.setActionHandler('seekbackward', () => {
+          seekPlaybackTo(getCurrentPlaybackPosition() - 2);
+        });
+        navigator.mediaSession.setActionHandler('seekforward', () => {
+          seekPlaybackTo(getCurrentPlaybackPosition() + 2);
+        });
+      } catch (e) {}
+    }
+
     function initAudioGraph() {
       if (!audioCtx) {
         audioCtx = new AudioContext();
         noiseBuffer = createNoiseBuffer(audioCtx);
+
         synthBus = audioCtx.createGain();
         synthBus.gain.value = 0.85;
+
+        recordMixBus = audioCtx.createGain();
+        recordMixBus.gain.value = 1.0;
 
         analyserNode = audioCtx.createAnalyser();
         analyserNode.fftSize = 128;
 
-        mixDestination = audioCtx.createMediaStreamDestination();
+        // 스튜디오 마스터 출력 볼륨 + 부드러운 피크 보호 리미터
         masterOutputGain = audioCtx.createGain();
         masterOutputGain.gain.value = speakerVolumePercent / 100;
-        masterOutputGain.connect(audioCtx.destination);
+
+        masterLimiter = audioCtx.createDynamicsCompressor();
+        masterLimiter.threshold.value = -2.0;
+        masterLimiter.knee.value = 4.0;
+        masterLimiter.ratio.value = 16.0;
+        masterLimiter.attack.value = 0.002;
+        masterLimiter.release.value = 0.1;
+
+        masterOutputGain.connect(masterLimiter);
+        masterLimiter.connect(audioCtx.destination);
 
         monitorGain = audioCtx.createGain();
         monitorGain.gain.value = $('monitorToggle').checked ? 0.85 : 0;
+        monitorGain.connect(masterOutputGain);
+
+        // 무손실 Float32 PCM 직접 캡처 노드 (4096 샘플 블록)
+        pcmCaptureNode = audioCtx.createScriptProcessor(4096, 1, 1);
+        pcmCaptureNode.onaudioprocess = (e) => {
+          if (!isRecording) return;
+          const input = e.inputBuffer.getChannelData(0);
+          const copy = new Float32Array(input.length);
+          copy.set(input);
+          pcmChunks.push(copy);
+          pcmTotalSamples += copy.length;
+        };
+
+        silentSink = audioCtx.createGain();
+        silentSink.gain.value = 0;
+
+        recordMixBus.connect(pcmCaptureNode);
+        pcmCaptureNode.connect(silentSink);
+        silentSink.connect(audioCtx.destination);
 
         synthBus.connect(analyserNode);
-        synthBus.connect(mixDestination);
+        synthBus.connect(recordMixBus);
         synthBus.connect(masterOutputGain);
-        monitorGain.connect(masterOutputGain);
+
+        registerMediaSession('paused');
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
@@ -537,7 +605,6 @@
       let sustain = true;
 
       if (currentInstrument === 'piano') {
-        // 피아노: 3현 유니즌 디튠 + 해머 어택 노이즈 + 다이내믹 로우패스 필터
         const filter = audioCtx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.setValueAtTime(freq * 7.5, now);
@@ -575,7 +642,6 @@
         masterGain.gain.linearRampToValueAtTime(0.75, now + 0.012);
         masterGain.gain.exponentialRampToValueAtTime(0.28, now + 0.45);
       } else if (currentInstrument === 'xylophone') {
-        // 쇠 실로폰(글로켄슈필/철금): 1옥타브 위 밝은 음역 + 쇠 채 타격 FM + 비정수 배음(2.756, 5.404)
         sustain = false;
         const metalFreq = freq * 2;
 
@@ -622,7 +688,6 @@
           o.stop(now + 1.2);
         });
       } else if (currentInstrument === 'ukulele') {
-        // 우쿨렐레: 나일론 줄 튕김 + 작은 나무 울림통 포먼트(310Hz, 620Hz)
         sustain = false;
         const body1 = audioCtx.createBiquadFilter();
         body1.type = 'peaking';
@@ -680,7 +745,6 @@
           o.stop(now + 0.9);
         });
       } else if (currentInstrument === 'violin') {
-        // 바이올린: 부드러운 활 어택 + 지연 비브라토 + 현악기 울림통 포먼트(290Hz, 490Hz)
         const formant1 = audioCtx.createBiquadFilter();
         formant1.type = 'peaking';
         formant1.frequency.value = 290;
@@ -805,18 +869,14 @@
       });
     }
 
-    // 주변 소리 줄이기(노이즈 캔슬링) & 입·출력 볼륨 조절
+    // 교실 맞춤형 수음 프리셋 & 입·출력 볼륨 조절 (강제 노이즈 게이트 없이 매끄러운 연속 수음)
     function applyNoiseModeToNodes() {
-      const cfg = NOISE_MODES[currentNoiseMode] || NOISE_MODES.classroom;
+      const cfg = NOISE_MODES[currentNoiseMode] || NOISE_MODES.raw;
       if (micHighpass && audioCtx) {
         micHighpass.frequency.setTargetAtTime(cfg.highpassFreq, audioCtx.currentTime, 0.02);
       }
-      if (micCompressor && audioCtx) {
-        micCompressor.threshold.setTargetAtTime(cfg.useComp ? -18 : 0, audioCtx.currentTime, 0.02);
-        micCompressor.ratio.setTargetAtTime(cfg.useComp ? 4 : 1, audioCtx.currentTime, 0.02);
-      }
-      if (micGateGain && !cfg.useComp && audioCtx) {
-        micGateGain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.02);
+      if (micPresenceFilter && audioCtx) {
+        micPresenceFilter.gain.setTargetAtTime(cfg.presenceGain, audioCtx.currentTime, 0.02);
       }
     }
 
@@ -876,7 +936,8 @@
     $('micGainSlider').addEventListener('input', (e) => updateMicGain(e.target.value));
     $('speakerVolSlider').addEventListener('input', (e) => updateSpeakerVolume(e.target.value));
 
-    function updateMicGateAndMeter() {
+    // 실시간 수음 감도 게이지 표시 (오디오 볼륨을 깎지 않고 시각 표시만 수행)
+    function updateMicMeterOnly() {
       const bar = $('micLevelBar');
       const hint = $('micLevelHint');
       if (!micAnalyser || !micStream) {
@@ -896,24 +957,11 @@
         sumSq += v * v;
       }
       const rms = Math.sqrt(sumSq / data.length);
+      const levelPct = Math.min(100, Math.round(rms * 340));
 
-      // 스마트 노이즈 게이트 적용
-      const cfg = NOISE_MODES[currentNoiseMode] || NOISE_MODES.classroom;
-      if (micGateGain && audioCtx) {
-        if (cfg.gateThreshold <= 0) {
-          micGateGain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.015);
-        } else {
-          const targetGain = rms >= cfg.gateThreshold ? 1 : cfg.gateFloor;
-          const timeConst = rms >= cfg.gateThreshold ? 0.008 : 0.065;
-          micGateGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, timeConst);
-        }
-      }
-
-      // 실시간 수음 감도 게이지 표시
-      const levelPct = Math.min(100, Math.round(rms * 380));
       if (bar && hint) {
         bar.style.width = `${levelPct}%`;
-        if (levelPct > 82) {
+        if (levelPct > 85) {
           bar.className = 'h-full bg-rose-500 transition-all duration-75';
           hint.textContent = '너무 큼!';
           hint.className = 'text-[10px] font-extrabold text-rose-400 shrink-0';
@@ -921,7 +969,7 @@
           bar.className = 'h-full bg-amber-400 transition-all duration-75';
           hint.textContent = '큼';
           hint.className = 'text-[10px] font-bold text-amber-300 shrink-0';
-        } else if (levelPct > 6) {
+        } else if (levelPct > 5) {
           bar.className = 'h-full bg-emerald-400 transition-all duration-75';
           hint.textContent = '좋음';
           hint.className = 'text-[10px] font-bold text-emerald-300 shrink-0';
@@ -933,7 +981,7 @@
       }
     }
 
-    // 마이크 연결 및 권한 모달
+    // 마이크 연결 및 권한 모달 (미디어 볼륨 모드 유지)
     async function connectMicrophone(fromModal = false) {
       initAudioGraph();
       if (micStream) {
@@ -941,45 +989,53 @@
         return true;
       }
       try {
-        const cfg = NOISE_MODES[currentNoiseMode] || NOISE_MODES.classroom;
+        const cfg = NOISE_MODES[currentNoiseMode] || NOISE_MODES.raw;
         micStream = await navigator.mediaDevices.getUserMedia({ audio: cfg.constraints });
 
         micSource = audioCtx.createMediaStreamSource(micStream);
+
         micHighpass = audioCtx.createBiquadFilter();
         micHighpass.type = 'highpass';
+
+        micPresenceFilter = audioCtx.createBiquadFilter();
+        micPresenceFilter.type = 'peaking';
+        micPresenceFilter.frequency.value = 2800;
+        micPresenceFilter.Q.value = 1.1;
 
         micInputGain = audioCtx.createGain();
         micInputGain.gain.value = micGainPercent / 100;
 
-        micCompressor = audioCtx.createDynamicsCompressor();
-        micCompressor.knee.value = 18;
-        micCompressor.attack.value = 0.004;
-        micCompressor.release.value = 0.16;
+        // 과도한 압착 없이 큰 북소리 피크만 부드럽게 보호하는 리미터
+        micLimiter = audioCtx.createDynamicsCompressor();
+        micLimiter.threshold.value = -3.0;
+        micLimiter.knee.value = 6.0;
+        micLimiter.ratio.value = 12.0;
+        micLimiter.attack.value = 0.002;
+        micLimiter.release.value = 0.12;
 
         micAnalyser = audioCtx.createAnalyser();
         micAnalyser.fftSize = 256;
 
-        micGateGain = audioCtx.createGain();
-        micGateGain.gain.value = 1;
-
         applyNoiseModeToNodes();
 
         micSource.connect(micHighpass);
-        micHighpass.connect(micInputGain);
-        micInputGain.connect(micCompressor);
-        micCompressor.connect(micAnalyser);
-        micCompressor.connect(micGateGain);
+        micHighpass.connect(micPresenceFilter);
+        micPresenceFilter.connect(micInputGain);
+        micInputGain.connect(micLimiter);
 
-        micGateGain.connect(analyserNode);
-        micGateGain.connect(mixDestination);
-        micGateGain.connect(monitorGain);
+        micLimiter.connect(micAnalyser);
+        micLimiter.connect(analyserNode);
+        micLimiter.connect(recordMixBus);
+        micLimiter.connect(monitorGain);
+
+        registerMediaSession('paused');
 
         $('micStatusDot').className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
         $('micStatusText').textContent = '마이크 연결됨';
         $('openMicModalBtn').className = 'px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold flex items-center gap-1.5';
         $('micModal').classList.add('hidden');
         micPromptDismissed = false;
-        showToast('마이크가 연결되었습니다!');
+        showToast('마이크가 고음질 미디어 모드로 연결되었습니다!');
         return true;
       } catch (err) {
         $('micBlockedGuide').classList.remove('hidden');
@@ -1011,7 +1067,7 @@
       }
     });
 
-    // 녹음 시작 및 중지
+    // 무손실 PCM 직접 녹음 시작 및 중지
     $('recordBtn').addEventListener('click', async () => {
       if (isRecording) {
         stopRecording();
@@ -1027,93 +1083,78 @@
         const connected = await connectMicrophone(false);
         if (!connected) {
           micPromptDismissed = true;
-          showToast('마이크 연결 전이라 미니 건반 소리만 녹음합니다.');
+          showToast('마이크 연결 전이라 미니 건반 소리만 무손실 녹음합니다.');
         }
       }
 
-      recordedChunks = [];
-      try {
-        mediaRecorder = new MediaRecorder(mixDestination.stream);
-      } catch (e) {
-        showToast('녹음 장치를 초기화할 수 없습니다.');
-        return;
-      }
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) recordedChunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-        if (blob.size < 100) {
-          showToast('녹음 시간이 너무 짧습니다. 조금 더 길게 녹음해 주세요.');
-          return;
-        }
-        const url = URL.createObjectURL(blob);
-        try {
-          const arrBuf = await blob.arrayBuffer();
-          const audioBuffer = await audioCtx.decodeAudioData(arrBuf);
-          const duration = audioBuffer.duration;
-          if (duration < 0.15) {
-            URL.revokeObjectURL(url);
-            showToast('녹음 시간이 너무 짧습니다. 조금 더 길게 녹음해 주세요.');
-            return;
-          }
-
-          if (rerecordIndex !== null && clips[rerecordIndex]) {
-            URL.revokeObjectURL(clips[rerecordIndex].url);
-            clips[rerecordIndex].blob = blob;
-            clips[rerecordIndex].url = url;
-            clips[rerecordIndex].audioBuffer = audioBuffer;
-            clips[rerecordIndex].duration = duration;
-            showToast(`조각 ${rerecordIndex + 1}이 새롭게 녹음되었습니다!`);
-            cancelRerecord();
-          } else {
-            const startTime = getTimelineTotalDuration();
-            clips.push({
-              name: `녹음 소리 ${clips.length + 1}`,
-              sourceType: 'mic',
-              blob,
-              url,
-              audioBuffer,
-              duration,
-              startTime: Math.round(startTime * 10) / 10
-            });
-            showToast('새 소리 조각이 타임라인에 추가되었습니다!');
-          }
-          renderAllClipViews();
-        } catch (err) {
-          showToast('녹음된 오디오를 처리하지 못했습니다.');
-        }
-      };
-
-      mediaRecorder.start();
+      pcmChunks = [];
+      pcmTotalSamples = 0;
       isRecording = true;
-      recordStartTime = Date.now();
+
       $('recordBtn').textContent = '⏹️ 녹음 멈추기';
       $('recordBtn').className = 'w-full py-4 px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition';
       $('recBadge').className = 'w-3 h-3 rounded-full bg-rose-500 animate-ping';
-      $('studioModeBadge').textContent = '녹음 중';
+      $('studioModeBadge').textContent = '무손실 녹음 중';
       $('studioModeBadge').className = 'px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[11px] font-bold';
-
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        $('timerDisplay').textContent = formatTime((Date.now() - recordStartTime) / 1000);
-      }, 200);
     }
 
     function stopRecording() {
-      if (mediaRecorder && isRecording) {
-        mediaRecorder.stop();
-      }
+      if (!isRecording) return;
       isRecording = false;
-      clearInterval(timerInterval);
+
       $('timerDisplay').textContent = '00:00';
       $('recordBtn').textContent = rerecordIndex !== null ? `🎙️ 조각 ${rerecordIndex + 1} 다시 녹음 시작` : '🎙️ 녹음 시작';
       $('recordBtn').className = 'w-full py-4 px-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition';
       $('recBadge').className = 'w-3 h-3 rounded-full bg-slate-500';
       $('studioModeBadge').textContent = '대기 중';
       $('studioModeBadge').className = 'px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[11px] font-bold';
+
+      const sampleRate = audioCtx ? audioCtx.sampleRate : 48000;
+      const duration = pcmTotalSamples / sampleRate;
+      if (duration < 0.15 || pcmChunks.length === 0) {
+        pcmChunks = [];
+        pcmTotalSamples = 0;
+        showToast('녹음 시간이 너무 짧습니다. 조금 더 길게 녹음해 주세요.');
+        return;
+      }
+
+      // 무손실 Float32 PCM 병합 및 시작/끝 10ms 미세 페이드(클릭 잡음 방지)
+      const mergedPcm = new Float32Array(pcmTotalSamples);
+      let offset = 0;
+      for (const chunk of pcmChunks) {
+        mergedPcm.set(chunk, offset);
+        offset += chunk.length;
+      }
+      pcmChunks = [];
+      pcmTotalSamples = 0;
+
+      const fadeSamples = Math.min(Math.floor(sampleRate * 0.01), Math.floor(mergedPcm.length / 4));
+      for (let i = 0; i < fadeSamples; i++) {
+        const gain = i / fadeSamples;
+        mergedPcm[i] *= gain;
+        mergedPcm[mergedPcm.length - 1 - i] *= gain;
+      }
+
+      const audioBuffer = audioCtx.createBuffer(1, mergedPcm.length, sampleRate);
+      audioBuffer.copyToChannel(mergedPcm, 0);
+
+      if (rerecordIndex !== null && clips[rerecordIndex]) {
+        clips[rerecordIndex].audioBuffer = audioBuffer;
+        clips[rerecordIndex].duration = audioBuffer.duration;
+        showToast(`조각 ${rerecordIndex + 1}이 무손실 원음으로 다시 녹음되었습니다!`);
+        cancelRerecord();
+      } else {
+        const startTime = getTimelineTotalDuration();
+        clips.push({
+          name: `녹음 소리 ${clips.length + 1}`,
+          sourceType: 'mic',
+          audioBuffer,
+          duration: audioBuffer.duration,
+          startTime: Math.round(startTime * 10) / 10
+        });
+        showToast('새 소리 조각이 무손실 원음으로 타임라인에 추가되었습니다!');
+      }
+      renderAllClipViews();
     }
 
     function prepareRerecord(idx) {
@@ -1153,7 +1194,7 @@
       $('cameraInput').value = '';
     });
 
-    // 영역맞춤 캡쳐 (고해상도 캔버스 직접 렌더링으로 브라우저 호환성 완벽 보장)
+    // 영역맞춤 캡쳐 (고해상도 캔버스 직접 렌더링)
     function drawRoundedRect(ctx, x, y, w, h, r) {
       ctx.beginPath();
       ctx.moveTo(x + r, y);
@@ -1181,7 +1222,7 @@
       return lines.length > 0 ? lines : ['-'];
     }
 
-    $('captureBtn').addEventListener('click', async () => {
+    $('captureBtn').addEventListener('click', () => {
       const btn = $('captureBtn');
       btn.disabled = true;
       try {
@@ -1204,11 +1245,9 @@
         const c = out.getContext('2d');
         c.scale(2, 2);
 
-        // 배경
         c.fillStyle = '#f1f5f9';
         c.fillRect(0, 0, W, H);
 
-        // 상단 헤더 바
         drawRoundedRect(c, pad, pad, cardW, 64, 20);
         c.fillStyle = '#4f46e5';
         c.fill();
@@ -1225,7 +1264,6 @@
         c.fillStyle = '#ffffff';
         c.fillText(dateStr, pad + cardW - dateW - 7, pad + 37);
 
-        // 카드 1: 내 활동 정보
         const card1Y = pad + 84;
         const card1H = 350;
         drawRoundedRect(c, pad, card1Y, cardW, card1H, 24);
@@ -1264,13 +1302,13 @@
           c.fillText(wrapped[0], pad + 40, ry + 43);
         });
 
-        // 카드 2: 활동 사진
         const card2Y = card1Y + card1H + 20;
         const card2H = photoDrawH + 84;
         drawRoundedRect(c, pad, card2Y, cardW, card2H, 24);
         c.fillStyle = '#ffffff';
         c.fill();
         c.strokeStyle = '#e2e8f0';
+        c.lineWidth = 2;
         c.stroke();
 
         c.fillStyle = '#0f172a';
@@ -1300,7 +1338,6 @@
           c.fillText(emptyMsg, boxX + (boxW - c.measureText(emptyMsg).width) / 2, boxY + photoDrawH / 2 + 6);
         }
 
-        // 하단 요약 바
         const footY = card2Y + card2H + 20;
         drawRoundedRect(c, pad, footY, cardW, 56, 18);
         c.fillStyle = '#ffffff';
@@ -1341,13 +1378,10 @@
         try {
           const arrBuf = await file.arrayBuffer();
           const audioBuffer = await audioCtx.decodeAudioData(arrBuf);
-          const url = URL.createObjectURL(file);
           const cleanName = file.name.replace(/\.[^/.]+$/, '');
           clips.push({
             name: cleanName,
             sourceType: 'file',
-            blob: file,
-            url,
             audioBuffer,
             duration: audioBuffer.duration,
             startTime: Math.round(getTimelineTotalDuration() * 10) / 10
@@ -1399,6 +1433,7 @@
       }
       stopActiveSources();
       isMixPlaying = false;
+      registerMediaSession('paused');
       if (resetToZero) {
         playStartOffset = 0;
         soloClipIndex = null;
@@ -1429,6 +1464,7 @@
       playStartOffset = safeOffset;
       playStartCtxTime = audioCtx.currentTime;
       isMixPlaying = true;
+      registerMediaSession('playing');
 
       if (soloClipIndex !== null && clips[soloClipIndex]) {
         const clip = clips[soloClipIndex];
@@ -1540,7 +1576,6 @@
       stopMixPlayback(true);
       if (rerecordIndex === idx) cancelRerecord();
       if (selectedClipIndex === idx) selectedClipIndex = null;
-      URL.revokeObjectURL(clips[idx].url);
       clips.splice(idx, 1);
       renderAllClipViews();
       showToast('선택한 소리 조각을 삭제했습니다.');
@@ -1703,7 +1738,7 @@
                 <div>
                   <div class="flex items-center gap-1.5">
                     <p class="text-sm font-extrabold text-slate-800">${clip.name}</p>
-                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${clip.sourceType === 'file' ? 'bg-indigo-100 text-indigo-700' : 'bg-rose-100 text-rose-700'}">${clip.sourceType === 'file' ? '외부음원' : '녹음'}</span>
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${clip.sourceType === 'file' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}">${clip.sourceType === 'file' ? '외부음원' : '무손실 녹음'}</span>
                     ${isOverlapping ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">겹침 배치됨</span>' : ''}
                   </div>
                   <p class="text-xs text-slate-500 font-semibold">시작: ${clip.startTime.toFixed(1)}초 · 길이: ${clip.duration.toFixed(1)}초</p>
@@ -1740,7 +1775,7 @@
       $('captureTrackSummary').textContent = `${clips.length}개 조각 · 총 ${formatTime(total)}`;
     }
 
-    // 실제 MP3 인코딩 및 저장
+    // 무손실 원본 버퍼에서 단일 192kbps 고음질 MP3 인코딩 및 저장
     $('exportMp3Btn').addEventListener('click', async () => {
       if (clips.length === 0) {
         showToast('저장할 소리 조각이 없습니다. 먼저 녹음하거나 음원을 불러와 주세요!');
@@ -1753,22 +1788,26 @@
       initAudioGraph();
       const btn = $('exportMp3Btn');
       btn.disabled = true;
-      btn.textContent = '⏳ MP3 변환 중...';
+      btn.textContent = '⏳ 192kbps MP3 변환 중...';
 
       try {
         const targetRate = 44100;
         const totalDuration = Math.max(0.5, getTimelineTotalDuration());
         const offline = new OfflineAudioContext(1, Math.ceil(totalDuration * targetRate), targetRate);
 
+        const offlineLimiter = offline.createDynamicsCompressor();
+        offlineLimiter.threshold.value = -1.5;
+        offlineLimiter.knee.value = 3.0;
+        offlineLimiter.ratio.value = 16.0;
+        offlineLimiter.attack.value = 0.002;
+        offlineLimiter.release.value = 0.1;
+        offlineLimiter.connect(offline.destination);
+
         for (const clip of clips) {
-          let buf = clip.audioBuffer;
-          if (!buf) {
-            const arrBuf = await clip.blob.arrayBuffer();
-            buf = await audioCtx.decodeAudioData(arrBuf);
-          }
+          if (!clip.audioBuffer) continue;
           const src = offline.createBufferSource();
-          src.buffer = buf;
-          src.connect(offline.destination);
+          src.buffer = clip.audioBuffer;
+          src.connect(offlineLimiter);
           src.start(clip.startTime);
         }
 
@@ -1780,7 +1819,7 @@
           merged[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
         }
 
-        const encoder = new lamejs.Mp3Encoder(1, targetRate, 128);
+        const encoder = new lamejs.Mp3Encoder(1, targetRate, 192);
         const mp3Data = [];
         const blockSize = 1152;
         for (let i = 0; i < merged.length; i += blockSize) {
@@ -1802,7 +1841,7 @@
         document.body.appendChild(link);
         link.click();
         link.remove();
-        showToast(`'${fileName}' 파일이 저장되었습니다!`);
+        showToast(`고음질 '${fileName}' 파일이 저장되었습니다!`);
       } catch (err) {
         showToast('MP3 변환 중 오류가 발생했습니다. 다시 시도해 주세요.');
       } finally {
@@ -1870,7 +1909,7 @@
       renderQrCode($('qrUrlInput').value);
     });
 
-    // 실시간 파형 캔버스
+    // 실시간 파형 캔버스 & 녹음 시간 업데이트
     const canvas = $('visualizer');
     const ctx2d = canvas.getContext('2d');
 
@@ -1883,7 +1922,11 @@
 
     function drawWaveform() {
       requestAnimationFrame(drawWaveform);
-      updateMicGateAndMeter();
+      updateMicMeterOnly();
+
+      if (isRecording && audioCtx) {
+        $('timerDisplay').textContent = formatTime(pcmTotalSamples / audioCtx.sampleRate);
+      }
 
       if (isMixPlaying) {
         const total = getActiveTargetDuration();
@@ -1991,7 +2034,7 @@
       resizeCanvas();
       drawWaveform();
       setupBackButtonGuard();
-      setNoiseMode('classroom');
+      setNoiseMode('raw');
       if (!micStream) {
         $('micModal').classList.remove('hidden');
       }
