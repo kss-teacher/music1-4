@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>부족 음악회: 우리가 소리를 만들었어요</title>
+  <title>상상: 내가 음악을 만든다면</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
@@ -30,8 +30,8 @@
       <div class="flex items-center gap-2.5">
         <div class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-xs">🥁</div>
         <div>
-          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">부족 음악회: 우리가 소리를 만들었어요</h1>
-          <p class="text-[11px] sm:text-xs text-slate-500 font-semibold">교실 도구 소리와 미니 악기를 무손실 원음으로 녹음해 우리 모둠만의 음악을 만들어요</p>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">상상: 내가 음악을 만든다면</h1>
+          <p class="text-[11px] sm:text-xs text-slate-500 font-semibold">Galaxy Tab S6+ 48kHz 듀얼 마이크 원음 녹음 &amp; 미니 악기 스튜디오</p>
         </div>
       </div>
 
@@ -133,7 +133,7 @@
     <!-- 오른쪽 컬럼: 녹음 스튜디오, 미니 건반, 타임라인, 조각 목록 -->
     <div class="lg:col-span-7 flex flex-col gap-5">
 
-      <!-- 1. 소리 녹음 스튜디오 (무손실 PCM 엔진 & 미디어 볼륨 모드 고정) -->
+      <!-- 1. Galaxy Tab S6+ 48kHz 듀얼 마이크 스튜디오 녹음기 -->
       <section class="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-md border border-slate-800">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3.5">
           <div class="flex items-center gap-2">
@@ -141,8 +141,8 @@
             <h2 class="text-base sm:text-lg font-extrabold">🎙️ 소리 녹음 스튜디오</h2>
             <span id="studioModeBadge" class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[11px] font-bold">대기 중</span>
           </div>
-          <div class="flex items-center gap-2.5">
-            <span class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold">🎵 고음질 미디어 모드</span>
+          <div class="flex items-center gap-2">
+            <span id="hwSpecBadge" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold">🎵 Tab S6+ 48kHz 스테레오 대기</span>
             <span id="timerDisplay" class="font-mono text-xl sm:text-2xl font-extrabold text-rose-400">00:00</span>
           </div>
         </div>
@@ -154,15 +154,15 @@
           </div>
         </div>
 
-        <!-- 교실 맞춤형 수음 프리셋 & 입·출력 볼륨 조절 패널 -->
+        <!-- Tab S6+ 하드웨어 수음 프리셋 & 입·출력 볼륨 조절 패널 -->
         <div class="mb-4 p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col gap-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <span class="text-xs font-extrabold text-slate-200 flex items-center gap-1.5">
-              <span>🎚️ 수음 음질 모드</span>
-              <span id="noiseModeDesc" class="text-[11px] font-semibold text-indigo-300">(악기·음악 원음 추천)</span>
+              <span>🎚️ Tab S6+ 수음 엔진</span>
+              <span id="noiseModeDesc" class="text-[11px] font-semibold text-indigo-300">(48kHz 듀얼 마이크 원음 · 기본 추천)</span>
             </span>
             <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
-              <button type="button" id="nc-raw" onclick="setNoiseMode('raw')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-indigo-600 text-white shadow-xs transition">🎵 악기 원음</button>
+              <button type="button" id="nc-raw" onclick="setNoiseMode('raw')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-indigo-600 text-white shadow-xs transition">🎵 스튜디오 원음</button>
               <button type="button" id="nc-classroom" onclick="setNoiseMode('classroom')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition">🏫 교실 잡음줄임</button>
               <button type="button" id="nc-voice" onclick="setNoiseMode('voice')" class="nc-btn px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition">🗣️ 목소리 집중</button>
             </div>
@@ -174,11 +174,11 @@
               <div class="flex items-center justify-between text-xs mb-1.5">
                 <span class="font-extrabold text-rose-300">🎙️ 마이크 수음 크기</span>
                 <div class="flex items-center gap-1.5">
-                  <span id="micGainValue" class="font-mono font-extrabold text-white">100%</span>
+                  <span id="micGainValue" class="font-mono font-extrabold text-white">125%</span>
                   <button type="button" onclick="resetMicGain()" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300">기본</button>
                 </div>
               </div>
-              <input id="micGainSlider" type="range" min="0" max="200" value="100" class="studio-slider w-full mb-2" />
+              <input id="micGainSlider" type="range" min="0" max="250" value="125" class="studio-slider w-full mb-2" />
               <div class="flex items-center gap-2">
                 <span class="text-[10px] font-bold text-slate-400 shrink-0">수음 감도</span>
                 <div class="flex-1 h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
@@ -282,7 +282,7 @@
         </div>
       </section>
 
-      <!-- 4. 소리 구간 목록 & 외부 음원 불러오기 / MP3 저장 -->
+      <!-- 4. 소리 구간 목록 & 외부 음원 불러오기 / 고음질 MP3 저장 -->
       <section class="bg-white rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200">
         <div class="flex flex-wrap items-center justify-between gap-2.5 mb-4">
           <div>
@@ -306,7 +306,7 @@
     </div>
   </main>
 
-  <!-- 마이크 권한 안내 모달 (앱 시작 시 바로 표시 + 미디어 볼륨 모드 안내) -->
+  <!-- 마이크 권한 안내 모달 (Galaxy Tab S6+ 하드웨어 최적화 안내 포함) -->
   <div id="micModal" class="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
       <div class="flex items-center justify-between mb-3">
@@ -314,10 +314,10 @@
         <button id="closeMicModalBtn" type="button" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 font-bold text-lg hover:bg-slate-200">✕</button>
       </div>
       <p class="text-xs sm:text-sm text-slate-600 mb-3 leading-relaxed">
-        교실 도구와 악기 소리를 무손실 원음으로 녹음하려면 마이크 허용이 필요해요. 아래 빨간 버튼을 누른 뒤 위쪽 창에서 <strong>[허용]</strong>을 눌러주세요!
+        교실 도구와 악기 소리를 녹음하려면 마이크 허용이 필요해요. 아래 빨간 버튼을 누른 뒤 위쪽 창에서 <strong>[허용]</strong>을 눌러주세요!
       </p>
       <div class="mb-4 p-3 rounded-2xl bg-indigo-50 border border-indigo-100 text-xs text-indigo-900 font-semibold leading-relaxed">
-        🎵 <strong>고음질 미디어 모드 적용:</strong> 녹음 중에도 태블릿 음량 버튼이 통화 음량이 아닌 <strong>미디어 음량</strong>으로 작동해 악기 소리가 뭉개지지 않아요.
+        🎧 <strong>Galaxy Tab S6+ 스튜디오 오디오 적용:</strong> 듀얼 MEMS 마이크의 <strong>48kHz 스테레오 원음(UNPROCESSED)</strong>을 독립 오디오 스레드로 무손실 수음하며, 태블릿 음량 버튼도 미디어 볼륨으로 유지됩니다.
       </div>
       <div id="micBlockedGuide" class="hidden mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
         <p class="font-extrabold mb-1">⚠️ 마이크 권한이 차단되어 있을 때 해결 방법:</p>
@@ -381,16 +381,16 @@
     const $ = (id) => document.getElementById(id);
 
     const NOTES = [
-      { name: '시', sub: '낮은 시', freq: 246.94, bg: '#8b5cf6', border: '#6d28d9' },
-      { name: '도', sub: '', freq: 261.63, bg: '#ef4444', border: '#b91c1c' },
-      { name: '레', sub: '', freq: 293.66, bg: '#f97316', border: '#c2410c' },
-      { name: '미', sub: '', freq: 329.63, bg: '#eab308', border: '#a16207' },
-      { name: '파', sub: '', freq: 349.23, bg: '#22c55e', border: '#15803d' },
-      { name: '솔', sub: '', freq: 392.00, bg: '#0ea5e9', border: '#0369a1' },
-      { name: '라', sub: '', freq: 440.00, bg: '#3b82f6', border: '#1d4ed8' },
-      { name: '시', sub: '', freq: 493.88, bg: '#8b5cf6', border: '#6d28d9' },
-      { name: '도', sub: '높은 도', freq: 523.25, bg: '#ef4444', border: '#b91c1c' },
-      { name: '레', sub: '높은 레', freq: 587.33, bg: '#f97316', border: '#c2410c' }
+      { name: '시', sub: '낮은 시', freq: 246.94, bg: '#8b5cf6', border: '#6d28d9', pan: -0.35 },
+      { name: '도', sub: '', freq: 261.63, bg: '#ef4444', border: '#b91c1c', pan: -0.28 },
+      { name: '레', sub: '', freq: 293.66, bg: '#f97316', border: '#c2410c', pan: -0.20 },
+      { name: '미', sub: '', freq: 329.63, bg: '#eab308', border: '#a16207', pan: -0.12 },
+      { name: '파', sub: '', freq: 349.23, bg: '#22c55e', border: '#15803d', pan: -0.04 },
+      { name: '솔', sub: '', freq: 392.00, bg: '#0ea5e9', border: '#0369a1', pan: 0.04 },
+      { name: '라', sub: '', freq: 440.00, bg: '#3b82f6', border: '#1d4ed8', pan: 0.12 },
+      { name: '시', sub: '', freq: 493.88, bg: '#8b5cf6', border: '#6d28d9', pan: 0.20 },
+      { name: '도', sub: '높은 도', freq: 523.25, bg: '#ef4444', border: '#b91c1c', pan: 0.28 },
+      { name: '레', sub: '높은 레', freq: 587.33, bg: '#f97316', border: '#c2410c', pan: 0.35 }
     ];
 
     const TRACK_COLORS = [
@@ -401,12 +401,13 @@
       { bar: 'bg-purple-500 border-purple-300', badge: 'bg-purple-600' }
     ];
 
-    // Web Audio 그래프 노드 (무손실 PCM 수음 + 미디어 모드 고정)
+    // Galaxy Tab S6+ 48kHz / 24-bit 듀얼 마이크 스테레오 Web Audio 그래프
     let audioCtx = null;
+    let audioInitPromise = null;
     let micStream = null;
     let micSource = null;
     let micHighpass = null;
-    let micPresenceFilter = null;
+    let micAirShelf = null;
     let micInputGain = null;
     let micLimiter = null;
     let micAnalyser = null;
@@ -416,42 +417,68 @@
     let masterLimiter = null;
     let synthBus = null;
     let recordMixBus = null;
-    let pcmCaptureNode = null;
+    let workletRecorderNode = null;
+    let fallbackScriptNode = null;
     let silentSink = null;
     let analyserNode = null;
     let noiseBuffer = null;
 
     let currentNoiseMode = 'raw';
-    let micGainPercent = 100;
+    let micGainPercent = 125; // UNPROCESSED 원음 모드에서 자체 녹음기 수준의 풍부한 음량을 확보하는 기본 프리앰프 게인
     let speakerVolumePercent = 100;
 
-    // 모든 프리셋에서 echoCancellation: false를 유지하여 안드로이드 '미디어 음량(STREAM_MUSIC)' 모드 고정
+    // Galaxy Tab S6+ 듀얼 MEMS 마이크 & Android HAL UNPROCESSED 직결 프리셋
+    // 모든 모드에서 echoCancellation: false를 유지하여 안드로이드 통화 모드 진입(음질 열화/통화 볼륨 전환)을 원천 차단
     const NOISE_MODES = {
       raw: {
-        desc: '(악기·음악 원음 추천 · 미디어 모드)',
-        highpassFreq: 70,
-        presenceGain: 0,
-        constraints: { echoCancellation: false, noiseSuppression: false, autoGainControl: true }
+        desc: '(48kHz 듀얼 마이크 원음 · 기본 추천)',
+        highpassFreq: 65,
+        airGain: 2.0,
+        airFreq: 3800,
+        constraints: {
+          channelCount: { ideal: 2 },
+          sampleRate: { ideal: 48000 },
+          sampleSize: { ideal: 24 },
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
       },
       classroom: {
-        desc: '(교실 잡음 줄이기 · 미디어 모드 유지)',
+        desc: '(교실 저주파 진동 컷 · 악기 배음 보호)',
         highpassFreq: 115,
-        presenceGain: 1.5,
-        constraints: { echoCancellation: false, noiseSuppression: true, autoGainControl: true }
+        airGain: 1.5,
+        airFreq: 3400,
+        constraints: {
+          channelCount: { ideal: 2 },
+          sampleRate: { ideal: 48000 },
+          sampleSize: { ideal: 24 },
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
       },
       voice: {
-        desc: '(목소리·발표 집중 · 또렷한 말소리)',
+        desc: '(목소리·발표 집중 · 주변 소음 억제)',
         highpassFreq: 145,
-        presenceGain: 4.0,
-        constraints: { echoCancellation: false, noiseSuppression: true, autoGainControl: true }
+        airGain: 3.5,
+        airFreq: 2800,
+        constraints: {
+          channelCount: { ideal: 2 },
+          sampleRate: { ideal: 48000 },
+          echoCancellation: false,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
       }
     };
 
     let currentInstrument = 'piano';
     const activeVoices = new Map();
 
-    // 무손실 Float32 PCM 직접 녹음 버퍼
-    let pcmChunks = [];
+    // 스테레오(L/R) 무손실 Float32 PCM 녹음 버퍼
+    let pcmLeftChunks = [];
+    let pcmRightChunks = [];
     let pcmTotalSamples = 0;
     let isRecording = false;
     let rerecordIndex = null;
@@ -499,15 +526,14 @@
       return buf;
     }
 
-    // 안드로이드/크롬 미디어 세션 등록 (물리 음량 버튼이 미디어 음량으로 동작하도록 지원)
     function registerMediaSession(state = 'paused') {
       if (!('mediaSession' in navigator)) return;
       try {
         if (!navigator.mediaSession.metadata && typeof MediaMetadata !== 'undefined') {
           navigator.mediaSession.metadata = new MediaMetadata({
             title: $('songTitle')?.value.trim() || '부족 음악회 스튜디오',
-            artist: $('groupName')?.value.trim() || '우리가 소리를 만들었어요',
-            album: '교실 음악 스튜디오'
+            artist: $('groupName')?.value.trim() || 'Galaxy Tab S6+ 48kHz Studio',
+            album: '우리가 소리를 만들었어요'
           });
         }
         navigator.mediaSession.playbackState = state;
@@ -529,27 +555,108 @@
       } catch (e) {}
     }
 
-    function initAudioGraph() {
+    // 독립 오디오 스레드(AudioWorklet) 기반 스테레오 무손실 레코더 모듈 등록
+    async function setupStereoRecorderNode(ctx) {
+      const workletCode = `
+        class StereoPcmRecorder extends AudioWorkletProcessor {
+          constructor() {
+            super();
+            this.recording = false;
+            this.port.onmessage = (e) => {
+              if (e.data && typeof e.data.recording === 'boolean') {
+                this.recording = e.data.recording;
+              }
+            };
+          }
+          process(inputs) {
+            const input = inputs[0];
+            if (this.recording && input && input.length > 0 && input[0]) {
+              const ch0 = input[0];
+              const ch1 = input[1] || ch0;
+              const left = new Float32Array(ch0.length);
+              const right = new Float32Array(ch1.length);
+              left.set(ch0);
+              right.set(ch1);
+              this.port.postMessage({ left, right }, [left.buffer, right.buffer]);
+            }
+            return true;
+          }
+        }
+        registerProcessor('stereo-pcm-recorder', StereoPcmRecorder);
+      `;
+
+      try {
+        if (ctx.audioWorklet) {
+          const blob = new Blob([workletCode], { type: 'application/javascript' });
+          const url = URL.createObjectURL(blob);
+          await ctx.audioWorklet.addModule(url);
+          URL.revokeObjectURL(url);
+
+          const node = new AudioWorkletNode(ctx, 'stereo-pcm-recorder', {
+            numberOfInputs: 1,
+            numberOfOutputs: 1,
+            channelCount: 2,
+            channelCountMode: 'explicit',
+            outputChannelCount: [2]
+          });
+          node.port.onmessage = (e) => {
+            if (!isRecording || !e.data) return;
+            const { left, right } = e.data;
+            pcmLeftChunks.push(left);
+            pcmRightChunks.push(right);
+            pcmTotalSamples += left.length;
+          };
+          workletRecorderNode = node;
+          recordMixBus.connect(workletRecorderNode);
+          workletRecorderNode.connect(silentSink);
+          return;
+        }
+      } catch (e) {}
+
+      // AudioWorklet 미지원 환경용 스테레오 폴백
+      fallbackScriptNode = ctx.createScriptProcessor(4096, 2, 2);
+      fallbackScriptNode.onaudioprocess = (e) => {
+        if (!isRecording) return;
+        const in0 = e.inputBuffer.getChannelData(0);
+        const in1 = e.inputBuffer.numberOfChannels > 1 ? e.inputBuffer.getChannelData(1) : in0;
+        const left = new Float32Array(in0.length);
+        const right = new Float32Array(in1.length);
+        left.set(in0);
+        right.set(in1);
+        pcmLeftChunks.push(left);
+        pcmRightChunks.push(right);
+        pcmTotalSamples += left.length;
+      };
+      recordMixBus.connect(fallbackScriptNode);
+      fallbackScriptNode.connect(silentSink);
+    }
+
+    async function initAudioGraph() {
       if (!audioCtx) {
-        audioCtx = new AudioContext();
+        // Galaxy Tab S6+ 네이티브 48kHz 하드웨어 클럭 & 글리치 방지 재생 버퍼
+        audioCtx = new AudioContext({ sampleRate: 48000, latencyHint: 'playback' });
         noiseBuffer = createNoiseBuffer(audioCtx);
 
         synthBus = audioCtx.createGain();
         synthBus.gain.value = 0.85;
+        synthBus.channelCount = 2;
+        synthBus.channelCountMode = 'explicit';
 
         recordMixBus = audioCtx.createGain();
         recordMixBus.gain.value = 1.0;
+        recordMixBus.channelCount = 2;
+        recordMixBus.channelCountMode = 'explicit';
 
         analyserNode = audioCtx.createAnalyser();
         analyserNode.fftSize = 128;
 
-        // 스튜디오 마스터 출력 볼륨 + 부드러운 피크 보호 리미터
         masterOutputGain = audioCtx.createGain();
         masterOutputGain.gain.value = speakerVolumePercent / 100;
+        masterOutputGain.channelCount = 2;
 
         masterLimiter = audioCtx.createDynamicsCompressor();
-        masterLimiter.threshold.value = -2.0;
-        masterLimiter.knee.value = 4.0;
+        masterLimiter.threshold.value = -1.5;
+        masterLimiter.knee.value = 3.0;
         masterLimiter.ratio.value = 16.0;
         masterLimiter.attack.value = 0.002;
         masterLimiter.release.value = 0.1;
@@ -561,45 +668,39 @@
         monitorGain.gain.value = $('monitorToggle').checked ? 0.85 : 0;
         monitorGain.connect(masterOutputGain);
 
-        // 무손실 Float32 PCM 직접 캡처 노드 (4096 샘플 블록)
-        pcmCaptureNode = audioCtx.createScriptProcessor(4096, 1, 1);
-        pcmCaptureNode.onaudioprocess = (e) => {
-          if (!isRecording) return;
-          const input = e.inputBuffer.getChannelData(0);
-          const copy = new Float32Array(input.length);
-          copy.set(input);
-          pcmChunks.push(copy);
-          pcmTotalSamples += copy.length;
-        };
-
         silentSink = audioCtx.createGain();
         silentSink.gain.value = 0;
-
-        recordMixBus.connect(pcmCaptureNode);
-        pcmCaptureNode.connect(silentSink);
         silentSink.connect(audioCtx.destination);
 
         synthBus.connect(analyserNode);
         synthBus.connect(recordMixBus);
         synthBus.connect(masterOutputGain);
 
+        audioInitPromise = setupStereoRecorderNode(audioCtx);
         registerMediaSession('paused');
       }
+      if (audioInitPromise) {
+        await audioInitPromise;
+      }
       if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+        await audioCtx.resume();
       }
     }
 
-    // 4가지 악기 음향 합성 (피아노, 쇠 실로폰/철금, 우쿨렐레, 바이올린)
-    function triggerNote(pointerId, note, keyEl) {
-      initAudioGraph();
+    // 4가지 악기 음향 합성 (스테레오 공간 배치 포함)
+    async function triggerNote(pointerId, note, keyEl) {
+      await initAudioGraph();
       if (activeVoices.has(pointerId)) releaseNote(pointerId);
       keyEl.classList.add('active');
 
       const now = audioCtx.currentTime;
       const freq = note.freq;
       const masterGain = audioCtx.createGain();
-      masterGain.connect(synthBus);
+
+      const panner = audioCtx.createStereoPanner();
+      panner.pan.setValueAtTime(note.pan || 0, now);
+      masterGain.connect(panner);
+      panner.connect(synthBus);
 
       const stopList = [];
       let sustain = true;
@@ -869,14 +970,15 @@
       });
     }
 
-    // 교실 맞춤형 수음 프리셋 & 입·출력 볼륨 조절 (강제 노이즈 게이트 없이 매끄러운 연속 수음)
+    // Galaxy Tab S6+ 하드웨어 DSP 필터(2차 고역통과 + 베젤 마이크 고음 명료도 보정)
     function applyNoiseModeToNodes() {
       const cfg = NOISE_MODES[currentNoiseMode] || NOISE_MODES.raw;
       if (micHighpass && audioCtx) {
         micHighpass.frequency.setTargetAtTime(cfg.highpassFreq, audioCtx.currentTime, 0.02);
       }
-      if (micPresenceFilter && audioCtx) {
-        micPresenceFilter.gain.setTargetAtTime(cfg.presenceGain, audioCtx.currentTime, 0.02);
+      if (micAirShelf && audioCtx) {
+        micAirShelf.frequency.setTargetAtTime(cfg.airFreq, audioCtx.currentTime, 0.02);
+        micAirShelf.gain.setTargetAtTime(cfg.airGain, audioCtx.currentTime, 0.02);
       }
     }
 
@@ -900,13 +1002,14 @@
         if (track && track.applyConstraints) {
           try {
             await track.applyConstraints(cfg.constraints);
+            updateHardwareSpecBadge(track);
           } catch (e) {}
         }
       }
     }
 
     function updateMicGain(pct) {
-      micGainPercent = Math.max(0, Math.min(200, Number(pct)));
+      micGainPercent = Math.max(0, Math.min(250, Number(pct)));
       $('micGainSlider').value = micGainPercent;
       $('micGainValue').textContent = `${micGainPercent}%`;
       if (micInputGain && audioCtx) {
@@ -915,8 +1018,8 @@
     }
 
     function resetMicGain() {
-      updateMicGain(100);
-      showToast('마이크 수음 크기를 기본(100%)으로 맞췄습니다.');
+      updateMicGain(125);
+      showToast('마이크 수음 크기를 Tab S6+ 기본(125%)으로 맞췄습니다.');
     }
 
     function updateSpeakerVolume(pct) {
@@ -936,7 +1039,6 @@
     $('micGainSlider').addEventListener('input', (e) => updateMicGain(e.target.value));
     $('speakerVolSlider').addEventListener('input', (e) => updateSpeakerVolume(e.target.value));
 
-    // 실시간 수음 감도 게이지 표시 (오디오 볼륨을 깎지 않고 시각 표시만 수행)
     function updateMicMeterOnly() {
       const bar = $('micLevelBar');
       const hint = $('micLevelHint');
@@ -969,7 +1071,7 @@
           bar.className = 'h-full bg-amber-400 transition-all duration-75';
           hint.textContent = '큼';
           hint.className = 'text-[10px] font-bold text-amber-300 shrink-0';
-        } else if (levelPct > 5) {
+        } else if (levelPct > 4) {
           bar.className = 'h-full bg-emerald-400 transition-all duration-75';
           hint.textContent = '좋음';
           hint.className = 'text-[10px] font-bold text-emerald-300 shrink-0';
@@ -981,9 +1083,20 @@
       }
     }
 
-    // 마이크 연결 및 권한 모달 (미디어 볼륨 모드 유지)
+    // 실제 하드웨어 스트림 제원 읽기 및 배지 표시
+    function updateHardwareSpecBadge(track) {
+      const badge = $('hwSpecBadge');
+      if (!badge || !track || !track.getSettings) return;
+      const s = track.getSettings();
+      const rateKhz = s.sampleRate ? `${(s.sampleRate / 1000).toFixed(1).replace('.0', '')}kHz` : '48kHz';
+      const chLabel = (s.channelCount || 2) >= 2 ? '스테레오 2ch' : '1ch';
+      const engineLabel = workletRecorderNode ? '독립스레드 원음' : '무손실 원음';
+      badge.textContent = `🎵 ${rateKhz} · ${chLabel} · ${engineLabel}`;
+    }
+
+    // Galaxy Tab S6+ 듀얼 마이크 연결 및 UNPROCESSED 원음 파이프라인 구성
     async function connectMicrophone(fromModal = false) {
-      initAudioGraph();
+      await initAudioGraph();
       if (micStream) {
         if (fromModal) $('micModal').classList.add('hidden');
         return true;
@@ -992,24 +1105,28 @@
         const cfg = NOISE_MODES[currentNoiseMode] || NOISE_MODES.raw;
         micStream = await navigator.mediaDevices.getUserMedia({ audio: cfg.constraints });
 
+        const track = micStream.getAudioTracks()[0];
+        updateHardwareSpecBadge(track);
+
         micSource = audioCtx.createMediaStreamSource(micStream);
 
         micHighpass = audioCtx.createBiquadFilter();
         micHighpass.type = 'highpass';
+        micHighpass.Q.value = 0.707;
 
-        micPresenceFilter = audioCtx.createBiquadFilter();
-        micPresenceFilter.type = 'peaking';
-        micPresenceFilter.frequency.value = 2800;
-        micPresenceFilter.Q.value = 1.1;
+        // 태블릿 측면 MEMS 마이크의 고음 감쇠를 보정해 타악기·실로폰·목소리를 또렷하게 살리는 Air EQ
+        micAirShelf = audioCtx.createBiquadFilter();
+        micAirShelf.type = 'peaking';
+        micAirShelf.Q.value = 0.85;
 
         micInputGain = audioCtx.createGain();
         micInputGain.gain.value = micGainPercent / 100;
 
-        // 과도한 압착 없이 큰 북소리 피크만 부드럽게 보호하는 리미터
+        // 자체 녹음기처럼 갑작스러운 큰 북소리 피크만 부드럽게 잡아주는 마스터 리미터
         micLimiter = audioCtx.createDynamicsCompressor();
-        micLimiter.threshold.value = -3.0;
-        micLimiter.knee.value = 6.0;
-        micLimiter.ratio.value = 12.0;
+        micLimiter.threshold.value = -2.5;
+        micLimiter.knee.value = 5.0;
+        micLimiter.ratio.value = 14.0;
         micLimiter.attack.value = 0.002;
         micLimiter.release.value = 0.12;
 
@@ -1019,8 +1136,8 @@
         applyNoiseModeToNodes();
 
         micSource.connect(micHighpass);
-        micHighpass.connect(micPresenceFilter);
-        micPresenceFilter.connect(micInputGain);
+        micHighpass.connect(micAirShelf);
+        micAirShelf.connect(micInputGain);
         micInputGain.connect(micLimiter);
 
         micLimiter.connect(micAnalyser);
@@ -1035,7 +1152,7 @@
         $('openMicModalBtn').className = 'px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold flex items-center gap-1.5';
         $('micModal').classList.add('hidden');
         micPromptDismissed = false;
-        showToast('마이크가 고음질 미디어 모드로 연결되었습니다!');
+        showToast('Galaxy Tab S6+ 듀얼 마이크 원음 모드로 연결되었습니다!');
         return true;
       } catch (err) {
         $('micBlockedGuide').classList.remove('hidden');
@@ -1057,8 +1174,8 @@
     $('skipMicModalBtn').addEventListener('click', dismissMicStartupModal);
     $('requestMicBtn').addEventListener('click', () => connectMicrophone(true));
 
-    $('monitorToggle').addEventListener('change', (e) => {
-      initAudioGraph();
+    $('monitorToggle').addEventListener('change', async (e) => {
+      await initAudioGraph();
       if (monitorGain) {
         monitorGain.gain.value = e.target.checked ? 0.85 : 0;
       }
@@ -1067,7 +1184,7 @@
       }
     });
 
-    // 무손실 PCM 직접 녹음 시작 및 중지
+    // 스테레오 무손실 PCM 녹음 시작 및 중지
     $('recordBtn').addEventListener('click', async () => {
       if (isRecording) {
         stopRecording();
@@ -1078,29 +1195,36 @@
 
     async function startRecording() {
       stopMixPlayback(false);
-      initAudioGraph();
+      await initAudioGraph();
       if (!micStream && !micPromptDismissed) {
         const connected = await connectMicrophone(false);
         if (!connected) {
           micPromptDismissed = true;
-          showToast('마이크 연결 전이라 미니 건반 소리만 무손실 녹음합니다.');
+          showToast('마이크 연결 전이라 미니 건반 소리만 스테레오 녹음합니다.');
         }
       }
 
-      pcmChunks = [];
+      pcmLeftChunks = [];
+      pcmRightChunks = [];
       pcmTotalSamples = 0;
       isRecording = true;
+      if (workletRecorderNode) {
+        workletRecorderNode.port.postMessage({ recording: true });
+      }
 
       $('recordBtn').textContent = '⏹️ 녹음 멈추기';
       $('recordBtn').className = 'w-full py-4 px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-base sm:text-lg shadow-lg active:scale-95 transition';
       $('recBadge').className = 'w-3 h-3 rounded-full bg-rose-500 animate-ping';
-      $('studioModeBadge').textContent = '무손실 녹음 중';
+      $('studioModeBadge').textContent = '48kHz 스테레오 녹음 중';
       $('studioModeBadge').className = 'px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[11px] font-bold';
     }
 
     function stopRecording() {
       if (!isRecording) return;
       isRecording = false;
+      if (workletRecorderNode) {
+        workletRecorderNode.port.postMessage({ recording: false });
+      }
 
       $('timerDisplay').textContent = '00:00';
       $('recordBtn').textContent = rerecordIndex !== null ? `🎙️ 조각 ${rerecordIndex + 1} 다시 녹음 시작` : '🎙️ 녹음 시작';
@@ -1111,37 +1235,46 @@
 
       const sampleRate = audioCtx ? audioCtx.sampleRate : 48000;
       const duration = pcmTotalSamples / sampleRate;
-      if (duration < 0.15 || pcmChunks.length === 0) {
-        pcmChunks = [];
+      if (duration < 0.15 || pcmLeftChunks.length === 0) {
+        pcmLeftChunks = [];
+        pcmRightChunks = [];
         pcmTotalSamples = 0;
         showToast('녹음 시간이 너무 짧습니다. 조금 더 길게 녹음해 주세요.');
         return;
       }
 
-      // 무손실 Float32 PCM 병합 및 시작/끝 10ms 미세 페이드(클릭 잡음 방지)
-      const mergedPcm = new Float32Array(pcmTotalSamples);
+      const mergedLeft = new Float32Array(pcmTotalSamples);
+      const mergedRight = new Float32Array(pcmTotalSamples);
       let offset = 0;
-      for (const chunk of pcmChunks) {
-        mergedPcm.set(chunk, offset);
-        offset += chunk.length;
+      for (let i = 0; i < pcmLeftChunks.length; i++) {
+        const lChunk = pcmLeftChunks[i];
+        const rChunk = pcmRightChunks[i] || lChunk;
+        mergedLeft.set(lChunk, offset);
+        mergedRight.set(rChunk, offset);
+        offset += lChunk.length;
       }
-      pcmChunks = [];
+      pcmLeftChunks = [];
+      pcmRightChunks = [];
       pcmTotalSamples = 0;
 
-      const fadeSamples = Math.min(Math.floor(sampleRate * 0.01), Math.floor(mergedPcm.length / 4));
+      // 시작/끝 10ms 미세 페이드로 연결부 클릭 잡음 완벽 차단
+      const fadeSamples = Math.min(Math.floor(sampleRate * 0.01), Math.floor(mergedLeft.length / 4));
       for (let i = 0; i < fadeSamples; i++) {
         const gain = i / fadeSamples;
-        mergedPcm[i] *= gain;
-        mergedPcm[mergedPcm.length - 1 - i] *= gain;
+        mergedLeft[i] *= gain;
+        mergedRight[i] *= gain;
+        mergedLeft[mergedLeft.length - 1 - i] *= gain;
+        mergedRight[mergedRight.length - 1 - i] *= gain;
       }
 
-      const audioBuffer = audioCtx.createBuffer(1, mergedPcm.length, sampleRate);
-      audioBuffer.copyToChannel(mergedPcm, 0);
+      const audioBuffer = audioCtx.createBuffer(2, mergedLeft.length, sampleRate);
+      audioBuffer.copyToChannel(mergedLeft, 0);
+      audioBuffer.copyToChannel(mergedRight, 1);
 
       if (rerecordIndex !== null && clips[rerecordIndex]) {
         clips[rerecordIndex].audioBuffer = audioBuffer;
         clips[rerecordIndex].duration = audioBuffer.duration;
-        showToast(`조각 ${rerecordIndex + 1}이 무손실 원음으로 다시 녹음되었습니다!`);
+        showToast(`조각 ${rerecordIndex + 1}이 48kHz 스테레오 원음으로 다시 녹음되었습니다!`);
         cancelRerecord();
       } else {
         const startTime = getTimelineTotalDuration();
@@ -1152,7 +1285,7 @@
           duration: audioBuffer.duration,
           startTime: Math.round(startTime * 10) / 10
         });
-        showToast('새 소리 조각이 무손실 원음으로 타임라인에 추가되었습니다!');
+        showToast('새 소리 조각이 48kHz 스테레오 원음으로 추가되었습니다!');
       }
       renderAllClipViews();
     }
@@ -1194,7 +1327,7 @@
       $('cameraInput').value = '';
     });
 
-    // 영역맞춤 캡쳐 (고해상도 캔버스 직접 렌더링)
+    // 영역맞춤 캡쳐
     function drawRoundedRect(ctx, x, y, w, h, r) {
       ctx.beginPath();
       ctx.moveTo(x + r, y);
@@ -1372,7 +1505,7 @@
     $('audioUploadInput').addEventListener('change', async (e) => {
       const files = Array.from(e.target.files || []);
       if (files.length === 0) return;
-      initAudioGraph();
+      await initAudioGraph();
 
       for (const file of files) {
         try {
@@ -1449,13 +1582,13 @@
       renderClips();
     }
 
-    function startScheduledPlayback(offsetSec = 0, targetSoloIdx = null) {
+    async function startScheduledPlayback(offsetSec = 0, targetSoloIdx = null) {
       if (clips.length === 0) {
         showToast('재생할 소리 조각이 없습니다.');
         return;
       }
       if (isRecording) stopRecording();
-      initAudioGraph();
+      await initAudioGraph();
       stopActiveSources();
 
       soloClipIndex = targetSoloIdx;
@@ -1598,7 +1731,6 @@
       }
     }
 
-    // 프리미어 프로 스타일 눈금자(Ruler) 클릭/드래그로 재생 헤드 이동
     function setupTimelineRulerScrub() {
       const ruler = $('timelineRuler');
       if (!ruler || ruler.dataset.bound === '1') return;
@@ -1738,7 +1870,7 @@
                 <div>
                   <div class="flex items-center gap-1.5">
                     <p class="text-sm font-extrabold text-slate-800">${clip.name}</p>
-                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${clip.sourceType === 'file' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}">${clip.sourceType === 'file' ? '외부음원' : '무손실 녹음'}</span>
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${clip.sourceType === 'file' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}">${clip.sourceType === 'file' ? '외부음원' : '48kHz 스테레오'}</span>
                     ${isOverlapping ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">겹침 배치됨</span>' : ''}
                   </div>
                   <p class="text-xs text-slate-500 font-semibold">시작: ${clip.startTime.toFixed(1)}초 · 길이: ${clip.duration.toFixed(1)}초</p>
@@ -1775,7 +1907,7 @@
       $('captureTrackSummary').textContent = `${clips.length}개 조각 · 총 ${formatTime(total)}`;
     }
 
-    // 무손실 원본 버퍼에서 단일 192kbps 고음질 MP3 인코딩 및 저장
+    // Galaxy Tab S6+ 네이티브 48kHz 스테레오 256kbps 최고음질 MP3 인코딩 및 저장
     $('exportMp3Btn').addEventListener('click', async () => {
       if (clips.length === 0) {
         showToast('저장할 소리 조각이 없습니다. 먼저 녹음하거나 음원을 불러와 주세요!');
@@ -1785,15 +1917,16 @@
         showToast('MP3 변환 도구를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.');
         return;
       }
-      initAudioGraph();
+      await initAudioGraph();
       const btn = $('exportMp3Btn');
       btn.disabled = true;
-      btn.textContent = '⏳ 192kbps MP3 변환 중...';
+      btn.textContent = '⏳ 48kHz 스테레오 MP3 변환 중...';
 
       try {
-        const targetRate = 44100;
+        // 48kHz 네이티브 샘플레이트 유지 (불필요한 리샘플링 손실 제로)
+        const targetRate = audioCtx ? audioCtx.sampleRate : 48000;
         const totalDuration = Math.max(0.5, getTimelineTotalDuration());
-        const offline = new OfflineAudioContext(1, Math.ceil(totalDuration * targetRate), targetRate);
+        const offline = new OfflineAudioContext(2, Math.ceil(totalDuration * targetRate), targetRate);
 
         const offlineLimiter = offline.createDynamicsCompressor();
         offlineLimiter.threshold.value = -1.5;
@@ -1812,19 +1945,26 @@
         }
 
         const rendered = await offline.startRendering();
-        const chData = rendered.getChannelData(0);
-        const merged = new Int16Array(chData.length);
-        for (let i = 0; i < chData.length; i++) {
-          const s = Math.max(-1, Math.min(1, chData[i]));
-          merged[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+        const chLeft = rendered.getChannelData(0);
+        const chRight = rendered.numberOfChannels > 1 ? rendered.getChannelData(1) : chLeft;
+
+        const leftInt16 = new Int16Array(chLeft.length);
+        const rightInt16 = new Int16Array(chRight.length);
+        for (let i = 0; i < chLeft.length; i++) {
+          const l = Math.max(-1, Math.min(1, chLeft[i]));
+          const r = Math.max(-1, Math.min(1, chRight[i]));
+          leftInt16[i] = l < 0 ? l * 0x8000 : l * 0x7FFF;
+          rightInt16[i] = r < 0 ? r * 0x8000 : r * 0x7FFF;
         }
 
-        const encoder = new lamejs.Mp3Encoder(1, targetRate, 192);
+        // 스테레오 2채널 · 48kHz · 256kbps 스튜디오 비트레이트 인코딩
+        const encoder = new lamejs.Mp3Encoder(2, targetRate, 256);
         const mp3Data = [];
         const blockSize = 1152;
-        for (let i = 0; i < merged.length; i += blockSize) {
-          const chunk = merged.subarray(i, i + blockSize);
-          const encoded = encoder.encodeBuffer(chunk);
+        for (let i = 0; i < leftInt16.length; i += blockSize) {
+          const lChunk = leftInt16.subarray(i, i + blockSize);
+          const rChunk = rightInt16.subarray(i, i + blockSize);
+          const encoded = encoder.encodeBuffer(lChunk, rChunk);
           if (encoded.length > 0) mp3Data.push(encoded);
         }
         const tail = encoder.flush();
@@ -1841,7 +1981,7 @@
         document.body.appendChild(link);
         link.click();
         link.remove();
-        showToast(`고음질 '${fileName}' 파일이 저장되었습니다!`);
+        showToast(`48kHz 스테레오 고음질 '${fileName}' 저장 완료!`);
       } catch (err) {
         showToast('MP3 변환 중 오류가 발생했습니다. 다시 시도해 주세요.');
       } finally {
