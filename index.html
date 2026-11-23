@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>상상: 내가 음악을 만든다면</title>
+  <title>음악을 만들어요</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
@@ -30,8 +30,8 @@
       <div class="flex items-center gap-2.5">
         <div class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-xs">🥁</div>
         <div>
-          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">상상: 내가 음악을 만든다면</h1>
-          <p class="text-[11px] sm:text-xs text-slate-500 font-semibold">Galaxy Tab S6+ 48kHz 듀얼 마이크 원음 녹음 &amp; 미니 악기 스튜디오</p>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">음악을 만들어요</h1>
+          <p class="text-[11px] sm:text-xs text-slate-500 font-semibold">Galaxy Tab S 48kHz 듀얼 마이크 &amp; 미니 악기 스튜디오</p>
         </div>
       </div>
 
@@ -133,7 +133,7 @@
     <!-- 오른쪽 컬럼: 녹음 스튜디오, 미니 건반, 타임라인, 조각 목록 -->
     <div class="lg:col-span-7 flex flex-col gap-5">
 
-      <!-- 1. Galaxy Tab S6+ 48kHz 듀얼 마이크 스튜디오 녹음기 -->
+      <!-- 1. Galaxy Tab S 48kHz 듀얼 마이크 -->
       <section class="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-md border border-slate-800">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3.5">
           <div class="flex items-center gap-2">
@@ -154,11 +154,11 @@
           </div>
         </div>
 
-        <!-- Tab S6+ 하드웨어 수음 프리셋 & 입·출력 볼륨 조절 패널 -->
+        <!-- Tab S 하드웨어 수음 프리셋 & 입·출력 볼륨 조절 패널 -->
         <div class="mb-4 p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col gap-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <span class="text-xs font-extrabold text-slate-200 flex items-center gap-1.5">
-              <span>🎚️ Tab S6+ 수음 엔진</span>
+              <span>🎚️ Tab S </span>
               <span id="noiseModeDesc" class="text-[11px] font-semibold text-indigo-300">(48kHz 듀얼 마이크 원음 · 기본 추천)</span>
             </span>
             <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
@@ -306,7 +306,7 @@
     </div>
   </main>
 
-  <!-- 마이크 권한 안내 모달 (Galaxy Tab S6+ 하드웨어 최적화 안내 포함) -->
+  <!-- 마이크 권한 안내 모달 (Galaxy Tab S 하드웨어 최적화 안내 포함) -->
   <div id="micModal" class="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
       <div class="flex items-center justify-between mb-3">
@@ -317,7 +317,7 @@
         교실 도구와 악기 소리를 녹음하려면 마이크 허용이 필요해요. 아래 빨간 버튼을 누른 뒤 위쪽 창에서 <strong>[허용]</strong>을 눌러주세요!
       </p>
       <div class="mb-4 p-3 rounded-2xl bg-indigo-50 border border-indigo-100 text-xs text-indigo-900 font-semibold leading-relaxed">
-        🎧 <strong>Galaxy Tab S6+ 스튜디오 오디오 적용:</strong> 듀얼 MEMS 마이크의 <strong>48kHz 스테레오 원음(UNPROCESSED)</strong>을 독립 오디오 스레드로 무손실 수음하며, 태블릿 음량 버튼도 미디어 볼륨으로 유지됩니다.
+        🎧 <strong>Galaxy Tab S 스튜디오 오디오 적용:</strong> 듀얼 MEMS 마이크의 <strong>48kHz 스테레오 원음(UNPROCESSED)</strong>을 오디오 스레드로 지원합니다.
       </div>
       <div id="micBlockedGuide" class="hidden mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
         <p class="font-extrabold mb-1">⚠️ 마이크 권한이 차단되어 있을 때 해결 방법:</p>
@@ -401,7 +401,7 @@
       { bar: 'bg-purple-500 border-purple-300', badge: 'bg-purple-600' }
     ];
 
-    // Galaxy Tab S6+ 48kHz / 24-bit 듀얼 마이크 스테레오 Web Audio 그래프
+    // Galaxy Tab S 48kHz / 24-bit 듀얼 마이크 스테레오 Web Audio 그래프
     let audioCtx = null;
     let audioInitPromise = null;
     let micStream = null;
@@ -427,7 +427,7 @@
     let micGainPercent = 125; // UNPROCESSED 원음 모드에서 자체 녹음기 수준의 풍부한 음량을 확보하는 기본 프리앰프 게인
     let speakerVolumePercent = 100;
 
-    // Galaxy Tab S6+ 듀얼 MEMS 마이크 & Android HAL UNPROCESSED 직결 프리셋
+    // Galaxy Tab S 듀얼 MEMS 마이크 & Android HAL UNPROCESSED 연결 프리셋
     // 모든 모드에서 echoCancellation: false를 유지하여 안드로이드 통화 모드 진입(음질 열화/통화 볼륨 전환)을 원천 차단
     const NOISE_MODES = {
       raw: {
@@ -532,7 +532,7 @@
         if (!navigator.mediaSession.metadata && typeof MediaMetadata !== 'undefined') {
           navigator.mediaSession.metadata = new MediaMetadata({
             title: $('songTitle')?.value.trim() || '부족 음악회 스튜디오',
-            artist: $('groupName')?.value.trim() || 'Galaxy Tab S6+ 48kHz Studio',
+            artist: $('groupName')?.value.trim() || 'Galaxy Tab S 48kHz Studio',
             album: '우리가 소리를 만들었어요'
           });
         }
@@ -633,7 +633,7 @@
 
     async function initAudioGraph() {
       if (!audioCtx) {
-        // Galaxy Tab S6+ 네이티브 48kHz 하드웨어 클럭 & 글리치 방지 재생 버퍼
+        // Galaxy Tab S 네이티브 48kHz 하드웨어 클럭 & 글리치 방지 재생 버퍼
         audioCtx = new AudioContext({ sampleRate: 48000, latencyHint: 'playback' });
         noiseBuffer = createNoiseBuffer(audioCtx);
 
@@ -970,7 +970,7 @@
       });
     }
 
-    // Galaxy Tab S6+ 하드웨어 DSP 필터(2차 고역통과 + 베젤 마이크 고음 명료도 보정)
+    // Galaxy Tab S 하드웨어 DSP 필터(2차 고역통과 + 베젤 마이크 고음 명료도 보정)
     function applyNoiseModeToNodes() {
       const cfg = NOISE_MODES[currentNoiseMode] || NOISE_MODES.raw;
       if (micHighpass && audioCtx) {
@@ -1019,7 +1019,7 @@
 
     function resetMicGain() {
       updateMicGain(125);
-      showToast('마이크 수음 크기를 Tab S6+ 기본(125%)으로 맞췄습니다.');
+      showToast('마이크 설정값을 Tab S 기본(125%)으로 맞췄습니다.');
     }
 
     function updateSpeakerVolume(pct) {
@@ -1094,7 +1094,7 @@
       badge.textContent = `🎵 ${rateKhz} · ${chLabel} · ${engineLabel}`;
     }
 
-    // Galaxy Tab S6+ 듀얼 마이크 연결 및 UNPROCESSED 원음 파이프라인 구성
+    // Galaxy Tab S 듀얼 마이크 연결 및 UNPROCESSED 구성
     async function connectMicrophone(fromModal = false) {
       await initAudioGraph();
       if (micStream) {
@@ -1152,7 +1152,7 @@
         $('openMicModalBtn').className = 'px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold flex items-center gap-1.5';
         $('micModal').classList.add('hidden');
         micPromptDismissed = false;
-        showToast('Galaxy Tab S6+ 듀얼 마이크 원음 모드로 연결되었습니다!');
+        showToast('Galaxy Tab S 듀얼 마이크로 설정되었습니다!');
         return true;
       } catch (err) {
         $('micBlockedGuide').classList.remove('hidden');
@@ -1907,7 +1907,7 @@
       $('captureTrackSummary').textContent = `${clips.length}개 조각 · 총 ${formatTime(total)}`;
     }
 
-    // Galaxy Tab S6+ 네이티브 48kHz 스테레오 256kbps 최고음질 MP3 인코딩 및 저장
+    // Galaxy Tab S 네이티브 48kHz 스테레오 256kbps 최고음질 MP3 인코딩 및 저장
     $('exportMp3Btn').addEventListener('click', async () => {
       if (clips.length === 0) {
         showToast('저장할 소리 조각이 없습니다. 먼저 녹음하거나 음원을 불러와 주세요!');
